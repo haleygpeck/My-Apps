@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="OOTD"/>
+  <meta name="theme-color" content="#000000"/>
+  <title>OOTD ✦ Outfit Picker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg:    #000;
+      --card:  #0d0d0d;
+      --card2: #141414;
+      --bdr:   #2a2a2a;
+      --hot:   #ff2d78;
+      --lime:  #d4ff00;
+      --cyan:  #00f0ff;
+      --purp:  #cc44ff;
+      --wht:   #ffffff;
+      --grey:  #888;
+      --dgrey: #444;
+
+      --mc: #ff8c42;--wc: #00c8ff;--oc: #ff2d78;--cc: #cc44ff;--gc: #d4ff00;
+      --sp: #44dd88;--su: #ffcc00;--fa: #ff7040;--wi: #88ccff;
+    }
+
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    html, body { background:#000; min-height:100dvh; }
+    body { font-family:'Space Grotesk',sans-serif; color:var(--wht); overflow-x:hidden; }
+
+    body::after {
+      content:''; position:fixed; inset:0; z-index:9999; pointer-events:none;
+      background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);
+    }
+
+    .app { max-width:480px; margin:0 auto; padding:0 0 110px; position:relative; z-index:1; }
+
+    /* ── Header ── */
+    .header {
+      background:#000; padding:54px 18px 16px;
+      border-bottom:1px solid var(--bdr); position:relative;
+    }
+    .header::before {
+      content:''; position:absolute; top:0; left:0; right:0; height:3px;
+      background:var(--hot); box-shadow:0 0 12px var(--hot),0 0 30px rgba(255,45,120,.5);
+    }
+    .header-top { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:14px; }
+    .logo {
+      font-family:'Bebas Neue',sans-serif; font-size:4.5rem; line-height:.85; letter-spacing:4px;
+      color:var(--wht); text-shadow:0 0 10px var(--hot),0 0 30px rgba(255,45,120,.4),2px 2px 0 var(--hot);
+    }
+    .logo-sub { font-size:.72rem; font-weight:600; letter-spacing:3px; text-transform:uppercase; color:var(--hot); margin-top:6px; }
+    .icon-btn {
+      background:#111; border:1px solid var(--dgrey); border-radius:8px;
+      color:var(--grey); font-size:.9rem; width:38px; height:38px;
+      display:flex; align-items:center; justify-content:center;
+      cursor:pointer; transition:all .2s; margin-top:6px;
+    }
+    .icon-btn:hover { border-color:var(--cyan); color:var(--cyan); }
+
+    /* ── Filter bar ── */
+    .filter-bar { background:#000; padding:14px 18px; border-bottom:1px solid var(--bdr); display:flex; flex-direction:column; gap:12px; }
+    .filter-row { display:flex; align-items:center; gap:10px; }
+    .filter-label { font-size:.6rem; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:var(--grey); flex-shrink:0; width:52px; }
+    .chip-scroll { display:flex; gap:6px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+    .chip-scroll::-webkit-scrollbar { display:none; }
+    .chip {
+      flex-shrink:0; padding:6px 14px; border-radius:4px;
+      border:1px solid var(--dgrey); background:#111;
+      font-family:'Space Grotesk',sans-serif; font-size:.78rem; font-weight:700; letter-spacing:.5px;
+      color:var(--grey); cursor:pointer; transition:all .14s; white-space:nowrap;
+    }
+    .chip:hover { border-color:var(--wht); color:var(--wht); }
+
+    /* ── Spin section ── */
+    .spin-section { background:#000; padding:16px 18px; border-bottom:1px solid var(--bdr); }
+    .spin-label { font-family:'Bebas Neue',sans-serif; font-size:1.1rem; letter-spacing:4px; color:var(--grey); margin-bottom:12px; }
+
+    /* Photo outfit grid */
+    .outfit-photo-grid {
+      display:grid; grid-template-columns:repeat(auto-fill,minmax(110px,1fr));
+      gap:8px; margin-bottom:14px;
+    }
+
+    .outfit-photo-slot {
+      background:#111; border:1px solid var(--bdr); border-radius:8px;
+      overflow:hidden; position:relative;
+      animation:slotIn .35s cubic-bezier(.34,1.56,.64,1) both;
+      aspect-ratio:3/4;
+    }
+    @keyframes slotIn { from{opacity:0;transform:scale(.9);} to{opacity:1;transform:scale(1);} }
+
+    .outfit-photo-slot img {
+      width:100%; height:100%; object-fit:cover; display:block;
+    }
+
+    .outfit-photo-slot .slot-overlay {
+      position:absolute; bottom:0; left:0; right:0;
+      background:linear-gradient(transparent,rgba(0,0,0,.85));
+      padding:20px 8px 8px;
+    }
+    .slot-cat-label {
+      font-size:.55rem; font-weight:700; letter-spacing:2px; text-transform:uppercase;
+      display:block; margin-bottom:2px;
+    }
+    .slot-item-label {
+      font-size:.78rem; font-weight:600; color:var(--wht);
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block;
+    }
+
+    /* No-photo slot */
+    .outfit-nophoto-slot {
+      display:grid; grid-template-columns:80px 1fr; align-items:center;
+      background:#111; border:1px solid var(--bdr); border-radius:6px;
+      overflow:hidden; margin-bottom:6px;
+      animation:slotIn .32s cubic-bezier(.34,1.56,.64,1) both;
+    }
+    .nophoto-icon {
+      display:flex; align-items:center; justify-content:center;
+      font-size:1.8rem; height:60px;
+      border-right:1px solid var(--bdr);
+      background:#161616;
+    }
+    .nophoto-info { padding:0 14px; }
+    .nophoto-cat { font-size:.58rem; font-weight:700; letter-spacing:2px; text-transform:uppercase; margin-bottom:2px; }
+    .nophoto-name { font-size:.92rem; font-weight:600; color:var(--wht); }
+
+    .spin-empty { font-size:.85rem; font-style:italic; color:var(--dgrey); text-align:center; padding:16px 0; }
+
+    .spin-btn {
+      width:100%; padding:16px; background:var(--hot); border:none; border-radius:6px;
+      font-family:'Bebas Neue',sans-serif; font-size:1.5rem; letter-spacing:4px;
+      color:#fff; cursor:pointer;
+      box-shadow:0 0 20px rgba(255,45,120,.5);
+      transition:box-shadow .18s, transform .14s;
+    }
+    .spin-btn:hover { box-shadow:0 0 35px rgba(255,45,120,.75); transform:scale(1.01); }
+    .spin-btn:active { transform:scale(.98); }
+    .spin-btn.spinning { animation:btnFlash .4s ease infinite alternate; }
+    @keyframes btnFlash { from{opacity:.7;} to{opacity:1;} }
+
+    /* ── Wardrobe ── */
+    .wardrobe-section { background:#000; padding:16px 18px 0; }
+    .section-hd { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+    .section-title { font-family:'Bebas Neue',sans-serif; font-size:1.6rem; letter-spacing:3px; color:var(--wht); }
+    .btn-sm {
+      background:transparent; border:1px solid var(--hot); border-radius:4px;
+      font-family:'Space Grotesk',sans-serif; font-size:.78rem; font-weight:700; letter-spacing:1px;
+      color:var(--hot); padding:8px 14px; cursor:pointer; transition:all .18s;
+    }
+    .btn-sm:hover { background:var(--hot); color:#fff; }
+
+    .cat-group { margin-bottom:10px; }
+    .cat-hd {
+      display:flex; align-items:center; justify-content:space-between;
+      background:#111; border:1px solid var(--bdr); border-radius:6px 6px 0 0;
+      padding:12px 14px; cursor:pointer; transition:background .16s;
+    }
+    .cat-hd.collapsed { border-radius:6px; }
+    .cat-hd:hover { background:#1a1a1a; }
+    .cat-hd-left { display:flex; align-items:center; gap:10px; }
+    .cat-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+    .cat-name { font-family:'Bebas Neue',sans-serif; font-size:1.1rem; letter-spacing:2px; color:var(--wht); }
+    .cat-count { font-size:.72rem; font-weight:600; color:var(--grey); }
+
+    .cat-body { background:#0a0a0a; border:1px solid var(--bdr); border-top:none; border-radius:0 0 6px 6px; }
+
+    /* Photo grid in wardrobe */
+    .wardrobe-photo-grid {
+      display:grid; grid-template-columns:repeat(3,1fr); gap:3px; padding:3px;
+    }
+    .w-photo-item {
+      position:relative; aspect-ratio:1; background:#161616;
+      overflow:hidden; cursor:pointer;
+    }
+    .w-photo-item img { width:100%; height:100%; object-fit:cover; display:block; transition:transform .2s; }
+    .w-photo-item:hover img { transform:scale(1.06); }
+    .w-photo-item .w-item-name {
+      position:absolute; bottom:0; left:0; right:0;
+      background:linear-gradient(transparent,rgba(0,0,0,.9));
+      padding:12px 6px 5px;
+      font-size:.62rem; font-weight:600; color:var(--wht);
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .w-photo-item .w-item-del {
+      position:absolute; top:4px; right:4px;
+      background:rgba(0,0,0,.7); border:none; border-radius:50%;
+      color:var(--hot); font-size:.65rem; width:22px; height:22px;
+      display:flex; align-items:center; justify-content:center;
+      cursor:pointer; opacity:0; transition:opacity .18s;
+    }
+    .w-photo-item:hover .w-item-del { opacity:1; }
+
+    /* No-photo wardrobe item */
+    .item-row {
+      display:grid; grid-template-columns:1fr auto; align-items:center; gap:8px;
+      padding:11px 14px; border-bottom:1px solid #161616;
+    }
+    .item-row:last-child { border-bottom:none; }
+    .item-name { font-size:.95rem; font-weight:600; color:var(--wht); }
+    .item-badges { display:flex; gap:4px; flex-wrap:wrap; margin-top:4px; }
+    .badge {
+      font-size:.6rem; font-weight:700; letter-spacing:.5px;
+      padding:2px 8px; border-radius:3px; border:1px solid transparent; white-space:nowrap;
+    }
+    .item-del { background:none; border:none; color:var(--dgrey); font-size:.78rem; cursor:pointer; padding:6px 8px; transition:color .18s; }
+    .item-del:hover { color:var(--hot); }
+    .no-items { padding:14px; font-size:.85rem; color:var(--dgrey); font-style:italic; }
+
+    .empty-wardrobe { text-align:center; padding:48px 24px; display:none; }
+    .empty-wardrobe.show { display:block; }
+    .empty-wardrobe .e-icon { font-size:3rem; margin-bottom:12px; }
+    .empty-wardrobe .e-title { font-family:'Bebas Neue',sans-serif; font-size:1.6rem; letter-spacing:3px; color:var(--grey); margin-bottom:6px; }
+    .empty-wardrobe .e-sub { font-size:.85rem; color:var(--dgrey); }
+
+    /* ── FAB ── */
+    .fab {
+      position:fixed; bottom:max(env(safe-area-inset-bottom,24px),32px); right:20px; z-index:50;
+      width:58px; height:58px; border-radius:50%; background:var(--hot); border:none;
+      color:#fff; font-size:1.8rem;
+      display:flex; align-items:center; justify-content:center; cursor:pointer;
+      box-shadow:0 0 20px rgba(255,45,120,.7),0 4px 20px rgba(0,0,0,.5);
+      transition:transform .18s,box-shadow .18s;
+    }
+    .fab:hover { transform:scale(1.08); box-shadow:0 0 36px rgba(255,45,120,.9); }
+    .fab:active { transform:scale(.93); }
+
+    /* ── Overlays ── */
+    .overlay {
+      position:fixed; inset:0; z-index:100; background:rgba(0,0,0,.9);
+      display:flex; align-items:flex-end;
+      opacity:0; pointer-events:none; transition:opacity .22s;
+    }
+    .overlay.open { opacity:1; pointer-events:all; }
+    .sheet {
+      width:100%; max-height:92dvh; overflow-y:auto;
+      background:#0d0d0d; border-top:2px solid var(--hot);
+      border-left:1px solid #222; border-right:1px solid #222;
+      border-radius:18px 18px 0 0;
+      padding:14px 20px max(env(safe-area-inset-bottom,28px),28px);
+      transform:translateY(100%); transition:transform .32s cubic-bezier(.32,.72,0,1);
+    }
+    .overlay.open .sheet { transform:translateY(0); }
+    .sheet-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:4px; }
+    .sheet-close {
+      background:#1a1a1a; border:1px solid var(--dgrey); border-radius:8px;
+      color:var(--grey); font-size:.85rem; font-weight:700;
+      width:34px; height:34px; display:flex; align-items:center; justify-content:center;
+      cursor:pointer; transition:all .18s; flex-shrink:0;
+    }
+    .sheet-close:hover { border-color:var(--hot); color:var(--hot); }
+    .sheet-title { font-family:'Bebas Neue',sans-serif; font-size:2rem; letter-spacing:3px; color:var(--wht); text-shadow:0 0 16px rgba(255,45,120,.4); margin-bottom:4px; }
+    .sheet-divider { height:1px; background:#222; margin:12px 0 18px; }
+
+    /* ── Photo upload ── */
+    .photo-upload-area {
+      border:2px dashed var(--dgrey); border-radius:10px;
+      padding:20px; text-align:center; cursor:pointer;
+      transition:border-color .2s, background .2s;
+      position:relative; overflow:hidden;
+      background:#0a0a0a;
+    }
+    .photo-upload-area:hover { border-color:var(--hot); background:#110008; }
+    .photo-upload-area input[type="file"] {
+      position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%;
+    }
+    .upload-icon { font-size:2rem; margin-bottom:8px; display:block; }
+    .upload-text { font-size:.82rem; color:var(--grey); font-weight:600; }
+    .upload-sub  { font-size:.72rem; color:var(--dgrey); margin-top:4px; }
+
+    /* Photo preview */
+    .photo-preview {
+      position:relative; border-radius:10px; overflow:hidden;
+      background:#111; border:1px solid var(--bdr);
+      aspect-ratio:3/4; max-width:160px; margin:0 auto;
+    }
+    .photo-preview img { width:100%; height:100%; object-fit:cover; display:block; }
+    .photo-preview .remove-photo {
+      position:absolute; top:8px; right:8px;
+      background:rgba(0,0,0,.8); border:1px solid var(--hot); border-radius:50%;
+      color:var(--hot); font-size:.7rem; width:26px; height:26px;
+      display:flex; align-items:center; justify-content:center;
+      cursor:pointer; font-weight:700;
+    }
+    .change-photo-btn {
+      display:block; text-align:center; margin-top:8px;
+      font-size:.75rem; color:var(--grey); cursor:pointer;
+      text-decoration:underline; position:relative;
+    }
+    .change-photo-btn input { position:absolute; inset:0; opacity:0; cursor:pointer; }
+
+    /* ── Form fields ── */
+    .field { margin-bottom:18px; }
+    .field>label { display:block; font-size:.62rem; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:var(--grey); margin-bottom:8px; }
+    .inp {
+      width:100%; background:#111; border:1px solid #333; border-radius:6px;
+      padding:12px 14px; font-family:'Space Grotesk',sans-serif; font-size:.95rem; color:var(--wht);
+      outline:none; -webkit-appearance:none; appearance:none; transition:border-color .2s;
+    }
+    .inp:focus { border-color:var(--hot); }
+    .inp::placeholder { color:#444; }
+
+    .pill-row { display:flex; flex-wrap:wrap; gap:7px; }
+    .pill {
+      padding:7px 14px; border-radius:4px; border:1px solid #333; background:#111;
+      font-family:'Space Grotesk',sans-serif; font-size:.78rem; font-weight:700; letter-spacing:.5px;
+      color:var(--grey); cursor:pointer; transition:all .14s; white-space:nowrap;
+    }
+    .pill:hover { border-color:var(--wht); color:var(--wht); }
+
+    .btn-row { display:flex; gap:10px; margin-top:6px; }
+    .btn-primary {
+      flex:1; padding:14px; background:var(--hot); border:none; border-radius:6px;
+      font-family:'Bebas Neue',sans-serif; font-size:1.4rem; letter-spacing:3px;
+      color:#fff; cursor:pointer; box-shadow:0 0 16px rgba(255,45,120,.4);
+      transition:box-shadow .18s,transform .14s;
+    }
+    .btn-primary:hover { box-shadow:0 0 28px rgba(255,45,120,.65); }
+    .btn-primary:active { transform:scale(.97); }
+    .btn-danger {
+      padding:13px 18px; background:transparent; border:1px solid #c03030; border-radius:6px;
+      font-family:'Space Grotesk',sans-serif; font-size:.88rem; font-weight:700;
+      color:#c03030; cursor:pointer; transition:all .18s;
+    }
+    .btn-danger:hover { background:#200808; border-color:var(--hot); color:var(--hot); }
+
+    /* Cat manager */
+    .cat-mgr-row {
+      display:flex; align-items:center; justify-content:space-between;
+      background:#111; border:1px solid #222; border-radius:6px; padding:12px 14px; margin-bottom:8px;
+    }
+    .add-row { display:flex; gap:8px; }
+
+    /* ── Toast ── */
+    .toast {
+      position:fixed; bottom:max(env(safe-area-inset-bottom,20px),32px); left:50%;
+      transform:translateX(-50%) translateY(14px);
+      background:#111; border:1px solid var(--hot); border-radius:6px; padding:11px 22px;
+      font-size:.85rem; font-weight:700; letter-spacing:.5px; color:var(--wht);
+      opacity:0; pointer-events:none; z-index:999;
+      box-shadow:0 0 16px rgba(255,45,120,.3);
+      transition:opacity .22s,transform .3s cubic-bezier(.34,1.56,.64,1); white-space:nowrap;
+    }
+    .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+
+<div class="app">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-top">
+      <div>
+        <div class="logo">OOTD</div>
+        <div class="logo-sub">✦ Outfit of the Day Picker</div>
+      </div>
+      <button class="icon-btn" onclick="openCatManager()">⊞</button>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filter-bar">
+    <div class="filter-row">
+      <div class="filter-label">Mood</div>
+      <div class="chip-scroll" id="moodChips"></div>
+    </div>
+    <div class="filter-row">
+      <div class="filter-label">Season</div>
+      <div class="chip-scroll" id="seasonChips"></div>
+    </div>
+  </div>
+
+  <!-- Spin -->
+  <div class="spin-section">
+    <div class="spin-label">✦ TODAY'S LOOK</div>
+    <div id="outfitResult"><div class="spin-empty">Hit the button to generate your outfit ✦</div></div>
+    <button class="spin-btn" id="spinBtn" onclick="spinOutfit()">✦ PICK MY OUTFIT ✦</button>
+  </div>
+
+  <!-- Wardrobe -->
+  <div class="wardrobe-section">
+    <div class="section-hd">
+      <div class="section-title">WARDROBE</div>
+      <button class="btn-sm" onclick="openAddItem()">+ ADD ITEM</button>
+    </div>
+    <div id="wardrobeList"></div>
+    <div class="empty-wardrobe" id="emptyWardrobe">
+      <div class="e-icon">👗</div>
+      <div class="e-title">Wardrobe Empty</div>
+      <div class="e-sub">Tap + ADD ITEM to start building your closet</div>
+    </div>
+  </div>
+</div>
+
+<button class="fab" onclick="openAddItem()">+</button>
+
+<!-- Add / Edit Sheet -->
+<div class="overlay" id="addOv" onclick="closeSheet('addOv')">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="handle"></div>
+    <div id="addContent"></div>
+  </div>
+</div>
+
+<!-- Category Manager -->
+<div class="overlay" id="catOv" onclick="closeSheet('catOv')">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="handle"></div>
+    <div id="catContent"></div>
+  </div>
+</div>
+
+<script>
+  const MOODS   = ['Any','Casual','Work','Going Out','Cozy','Gym'];
+  const SEASONS = ['Any','Spring','Summer','Fall','Winter'];
+  const MOOD_C  = {Any:'#cc44ff',Casual:'#ff8c42',Work:'#00c8ff','Going Out':'#ff2d78',Cozy:'#cc44ff',Gym:'#d4ff00'};
+  const SEA_C   = {Any:'#cc44ff',Spring:'#44dd88',Summer:'#ffcc00',Fall:'#ff7040',Winter:'#88ccff'};
+  const CAT_C   = ['#ff2d78','#d4ff00','#00f0ff','#cc44ff','#ff8c42','#44dd88','#ffcc00','#88ccff'];
+
+  let D  = { categories:['Tops','Bottoms','Shoes','Accessories'], items:[] };
+  let AF = { id:null, name:'', category:'', moods:[], seasons:[], photo:null };
+  let FL = { mood:'Any', season:'Any' };
+
+  function save(){ try{localStorage.setItem('ootd4',JSON.stringify(D));}catch(e){ toast('Storage full — try removing some photos'); } }
+  function load(){ try{const s=localStorage.getItem('ootd4');if(s)D=JSON.parse(s);}catch(e){} }
+
+  function init(){ load(); renderMoodChips(); renderSeasonChips(); renderWardrobe(); }
+
+  /* ── Image compression ── */
+  function compressImage(file, callback){
+    const MAX = 400;
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let w=img.width, h=img.height;
+        if(w>h){ if(w>MAX){h=h*MAX/w;w=MAX;} } else { if(h>MAX){w=w*MAX/h;h=MAX;} }
+        canvas.width=w; canvas.height=h;
+        const ctx=canvas.getContext('2d');
+        ctx.drawImage(img,0,0,w,h);
+        callback(canvas.toDataURL('image/jpeg',0.72));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  /* ── Chips ── */
+  function renderMoodChips(){
+    document.getElementById('moodChips').innerHTML = MOODS.map(m=>`
+      <button class="chip" onclick="setMood('${m}')"
+        style="${FL.mood===m?`border-color:${MOOD_C[m]};color:${MOOD_C[m]};background:${MOOD_C[m]}15;box-shadow:0 0 8px ${MOOD_C[m]}66`:''}">
+        ${m}</button>`).join('');
+  }
+  function renderSeasonChips(){
+    document.getElementById('seasonChips').innerHTML = SEASONS.map(s=>`
+      <button class="chip" onclick="setSeason('${s}')"
+        style="${FL.season===s?`border-color:${SEA_C[s]};color:${SEA_C[s]};background:${SEA_C[s]}15;box-shadow:0 0 8px ${SEA_C[s]}66`:''}">
+        ${s}</button>`).join('');
+  }
+  function setMood(m){ FL.mood=m; renderMoodChips(); }
+  function setSeason(s){ FL.season=s; renderSeasonChips(); }
+
+  /* ── Spinner ── */
+  function spinOutfit(){
+    const btn=document.getElementById('spinBtn');
+    const res=document.getElementById('outfitResult');
+
+    const filtered=D.items.filter(i=>{
+      const mOk=FL.mood==='Any'||i.moods.length===0||i.moods.includes(FL.mood);
+      const sOk=FL.season==='Any'||i.seasons.length===0||i.seasons.includes(FL.season);
+      return mOk&&sOk;
+    });
+
+    if(!filtered.length){ res.innerHTML=`<div class="spin-empty">No items match — try a different filter</div>`; return; }
+
+    btn.classList.add('spinning'); btn.textContent='✦ PICKING... ✦'; res.innerHTML='';
+
+    const result=[];
+    D.categories.forEach((cat,ci)=>{
+      const pool=filtered.filter(i=>i.category===cat);
+      if(pool.length) result.push({cat,item:pool[Math.floor(Math.random()*pool.length)],ci});
+    });
+
+    if(!result.length){
+      res.innerHTML=`<div class="spin-empty">Add some items first ✦</div>`;
+      btn.classList.remove('spinning'); btn.textContent='✦ PICK MY OUTFIT ✦'; return;
+    }
+
+    setTimeout(()=>{
+      btn.classList.remove('spinning'); btn.textContent='✦ PICK AGAIN ✦';
+
+      // Split into photo and no-photo
+      const withPhoto    = result.filter(r=>r.item.photo);
+      const withoutPhoto = result.filter(r=>!r.item.photo);
+
+      let html='';
+
+      if(withPhoto.length){
+        html+=`<div class="outfit-photo-grid">
+          ${withPhoto.map((r,i)=>`
+            <div class="outfit-photo-slot" style="animation-delay:${i*70}ms">
+              <img src="${r.item.photo}" alt="${r.item.name}"/>
+              <div class="slot-overlay">
+                <span class="slot-cat-label" style="color:${CAT_C[r.ci%CAT_C.length]}">${r.cat}</span>
+                <span class="slot-item-label">${r.item.name}</span>
+              </div>
+            </div>`).join('')}
+        </div>`;
+      }
+
+      if(withoutPhoto.length){
+        html+=withoutPhoto.map((r,i)=>`
+          <div class="outfit-nophoto-slot" style="animation-delay:${(withPhoto.length+i)*70}ms;border-left:3px solid ${CAT_C[r.ci%CAT_C.length]}">
+            <div class="nophoto-icon">👕</div>
+            <div class="nophoto-info">
+              <div class="nophoto-cat" style="color:${CAT_C[r.ci%CAT_C.length]}">${r.cat}</div>
+              <div class="nophoto-name">${r.item.name}</div>
+            </div>
+          </div>`).join('');
+      }
+
+      res.innerHTML=html;
+    },550);
+  }
+
+  /* ── Wardrobe ── */
+  function renderWardrobe(){
+    const el=document.getElementById('wardrobeList');
+    const empty=document.getElementById('emptyWardrobe');
+    if(!D.items.length){ el.innerHTML=''; empty.classList.add('show'); return; }
+    empty.classList.remove('show');
+
+    el.innerHTML=D.categories.map((cat,ci)=>{
+      const items=D.items.filter(i=>i.category===cat);
+      const dot=CAT_C[ci%CAT_C.length];
+      const photoItems=items.filter(i=>i.photo);
+      const noPhotoItems=items.filter(i=>!i.photo);
+
+      return `<div class="cat-group">
+        <div class="cat-hd" onclick="toggleCat(this)">
+          <div class="cat-hd-left">
+            <div class="cat-dot" style="background:${dot};box-shadow:0 0 6px ${dot}"></div>
+            <div class="cat-name">${cat}</div>
+          </div>
+          <div class="cat-count">${items.length} item${items.length!==1?'s':''}</div>
+        </div>
+        <div class="cat-body">
+          ${!items.length?`<div class="no-items">Nothing in ${cat} yet</div>`:''}
+
+          ${photoItems.length?`
+            <div class="wardrobe-photo-grid">
+              ${photoItems.map(item=>`
+                <div class="w-photo-item" onclick="openAddItem(${item.id})">
+                  <img src="${item.photo}" alt="${item.name}" loading="lazy"/>
+                  <div class="w-item-name">${item.name}</div>
+                  <button class="w-item-del" onclick="event.stopPropagation();deleteItem(${item.id})">✕</button>
+                </div>`).join('')}
+            </div>`:''}
+
+          ${noPhotoItems.map(item=>`
+            <div class="item-row">
+              <div>
+                <div class="item-name">${item.name}</div>
+                <div class="item-badges">
+                  ${item.moods.map(m=>`<span class="badge" style="border-color:${MOOD_C[m]}55;color:${MOOD_C[m]};background:${MOOD_C[m]}12">${m}</span>`).join('')}
+                  ${item.seasons.map(s=>`<span class="badge" style="border-color:${SEA_C[s]}55;color:${SEA_C[s]};background:${SEA_C[s]}12">${s}</span>`).join('')}
+                </div>
+              </div>
+              <button class="item-del" onclick="deleteItem(${item.id})">✕</button>
+            </div>`).join('')}
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function toggleCat(hd){
+    hd.classList.toggle('collapsed');
+    const body=hd.nextElementSibling;
+    if(body) body.style.display=hd.classList.contains('collapsed')?'none':'';
+  }
+
+  function deleteItem(id){ D.items=D.items.filter(i=>i.id!==id); save(); renderWardrobe(); toast('Item removed'); }
+
+  /* ── Add / Edit ── */
+  function openAddItem(editId){
+    if(editId){ const it=D.items.find(i=>i.id===editId); AF={...it,moods:[...it.moods],seasons:[...it.seasons]}; }
+    else       { AF={id:null,name:'',category:D.categories[0]||'',moods:[],seasons:[],photo:null}; }
+    renderAddForm(); openSheet('addOv');
+    setTimeout(()=>document.getElementById('itemNameInp')?.focus(),360);
+  }
+
+  function renderAddForm(){
+    document.getElementById('addContent').innerHTML=`
+      <div class="sheet-header">
+        <div class="sheet-title">${AF.id?'EDIT ITEM':'ADD ITEM'}</div>
+        <button class="sheet-close" onclick="closeSheet('addOv')">✕</button>
+      </div>
+      <div class="sheet-divider"></div>
+
+      <div class="field">
+        <label>Photo</label>
+        ${AF.photo
+          ? `<div class="photo-preview">
+               <img src="${AF.photo}" alt="preview"/>
+               <button class="remove-photo" onclick="removePhoto()">✕</button>
+             </div>
+             <label class="change-photo-btn">
+               Change photo
+               <input type="file" accept="image/*" capture="environment" onchange="handlePhoto(this)"/>
+             </label>`
+          : `<div class="photo-upload-area">
+               <input type="file" accept="image/*" capture="environment" onchange="handlePhoto(this)"/>
+               <span class="upload-icon">📷</span>
+               <div class="upload-text">Tap to add a photo</div>
+               <div class="upload-sub">from your camera roll or camera</div>
+             </div>`
+        }
+      </div>
+
+      <div class="field">
+        <label>Item Name</label>
+        <input class="inp" id="itemNameInp" type="text" value="${AF.name}"
+          placeholder="e.g. Black cargo pants…" maxlength="60" oninput="AF.name=this.value"/>
+      </div>
+
+      <div class="field">
+        <label>Category</label>
+        <div class="pill-row">
+          ${D.categories.map((c,ci)=>`
+            <button class="pill" onclick="setAFCat('${c}')"
+              style="${AF.category===c?`border-color:${CAT_C[ci%CAT_C.length]};color:${CAT_C[ci%CAT_C.length]};background:${CAT_C[ci%CAT_C.length]}15`:''}">
+              ${c}</button>`).join('')}
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Mood <span style="font-weight:400;text-transform:none;letter-spacing:0;font-style:italic;color:#555">(optional)</span></label>
+        <div class="pill-row">
+          ${MOODS.filter(m=>m!=='Any').map(m=>`
+            <button class="pill" onclick="toggleAFMood('${m}')"
+              style="${AF.moods.includes(m)?`border-color:${MOOD_C[m]};color:${MOOD_C[m]};background:${MOOD_C[m]}15`:''}">
+              ${m}</button>`).join('')}
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Season <span style="font-weight:400;text-transform:none;letter-spacing:0;font-style:italic;color:#555">(optional)</span></label>
+        <div class="pill-row">
+          ${SEASONS.filter(s=>s!=='Any').map(s=>`
+            <button class="pill" onclick="toggleAFSeason('${s}')"
+              style="${AF.seasons.includes(s)?`border-color:${SEA_C[s]};color:${SEA_C[s]};background:${SEA_C[s]}15`:''}">
+              ${s}</button>`).join('')}
+        </div>
+      </div>
+
+      <div class="btn-row">
+        ${AF.id?`<button class="btn-danger" onclick="deleteItem(${AF.id});closeSheet('addOv')">Delete</button>`:''}
+        <button class="btn-primary" onclick="saveItem()">${AF.id?'SAVE':'ADD TO WARDROBE'}</button>
+      </div>`;
+  }
+
+  function handlePhoto(input){
+    const file=input.files[0];
+    if(!file) return;
+    compressImage(file, data=>{ AF.photo=data; renderAddForm(); });
+  }
+
+  function removePhoto(){ AF.photo=null; renderAddForm(); }
+  function setAFCat(c){ AF.category=c; renderAddForm(); }
+  function toggleAFMood(m){ AF.moods=AF.moods.includes(m)?AF.moods.filter(x=>x!==m):[...AF.moods,m]; renderAddForm(); }
+  function toggleAFSeason(s){ AF.seasons=AF.seasons.includes(s)?AF.seasons.filter(x=>x!==s):[...AF.seasons,s]; renderAddForm(); }
+
+  function saveItem(){
+    const nameEl=document.getElementById('itemNameInp');
+    const name=(nameEl?.value||AF.name).trim();
+    if(!name){ toast('Enter an item name'); return; }
+    if(!AF.category){ toast('Pick a category'); return; }
+    AF.name=name;
+    if(AF.id){ const idx=D.items.findIndex(i=>i.id===AF.id); if(idx>-1)D.items[idx]={...AF}; toast('✦ Saved!'); }
+    else      { D.items.push({...AF,id:Date.now()}); toast('✦ Added!'); }
+    save(); closeSheet('addOv'); renderWardrobe();
+  }
+
+  /* ── Category Manager ── */
+  function openCatManager(){ renderCatManager(); openSheet('catOv'); }
+  function renderCatManager(){
+    document.getElementById('catContent').innerHTML=`
+      <div class="sheet-header">
+        <div class="sheet-title">CATEGORIES</div>
+        <button class="sheet-close" onclick="closeSheet('catOv')">✕</button>
+      </div>
+      <div class="sheet-divider"></div>
+      <div style="margin-bottom:16px">
+        ${D.categories.map((c,ci)=>`
+          <div class="cat-mgr-row">
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="width:8px;height:8px;border-radius:50%;background:${CAT_C[ci%CAT_C.length]};box-shadow:0 0 6px ${CAT_C[ci%CAT_C.length]};flex-shrink:0"></div>
+              <span style="font-weight:600;font-size:.95rem">${c}</span>
+            </div>
+            <button class="item-del" onclick="deleteCat('${c}')">✕</button>
+          </div>`).join('')}
+      </div>
+      <div class="field">
+        <label>New Category</label>
+        <div class="add-row">
+          <input class="inp" id="newCatInp" type="text" placeholder="e.g. Outerwear…" maxlength="30"
+            onkeydown="if(event.key==='Enter')addCat()"/>
+          <button class="btn-sm" onclick="addCat()" style="white-space:nowrap;flex-shrink:0">+ ADD</button>
+        </div>
+      </div>`;
+  }
+  function addCat(){
+    const v=document.getElementById('newCatInp')?.value.trim();
+    if(!v||D.categories.includes(v)){ toast('Enter a unique name'); return; }
+    D.categories.push(v); save(); renderWardrobe(); renderCatManager(); toast(`✦ "${v}" added`);
+  }
+  function deleteCat(c){
+    if(D.items.some(i=>i.category===c)){ toast(`Remove items from "${c}" first`); return; }
+    D.categories=D.categories.filter(x=>x!==c); save(); renderWardrobe(); renderCatManager(); toast('Category removed');
+  }
+
+  /* ── Sheets ── */
+  function openSheet(id) { document.getElementById(id).classList.add('open');    document.body.style.overflow='hidden'; }
+  function closeSheet(id){ document.getElementById(id).classList.remove('open'); document.body.style.overflow=''; }
+
+  /* ── Toast ── */
+  let tt;
+  function toast(msg){
+    const el=document.getElementById('toast');
+    el.textContent=msg; el.classList.add('show');
+    clearTimeout(tt); tt=setTimeout(()=>el.classList.remove('show'),2400);
+  }
+
+  /* ── PWA ── */
+  try{
+    const m={name:'OOTD Picker',short_name:'OOTD',start_url:'./',display:'standalone',background_color:'#000',theme_color:'#000',
+      icons:[{src:"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj4KICA8cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjIyIiBmaWxsPSIjMGEwMDA4Ii8+CiAgPCEtLSBzY2FubGluZXMgLS0+CiAgPHJlY3Qgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIHJ4PSIyMiIgZmlsbD0idXJsKCNzY2FuKSIgb3BhY2l0eT0iLjA2Ii8+CiAgPCEtLSBzdGFycyAtLT4KICA8Y2lyY2xlIGN4PSI4MCIgY3k9IjE4IiByPSIxLjQiIGZpbGw9IiNmZjJkNzgiIG9wYWNpdHk9Ii43Ii8+CiAgPGNpcmNsZSBjeD0iMTYiIGN5PSIyOCIgcj0iMSIgZmlsbD0iI2ZmMmQ3OCIgb3BhY2l0eT0iLjUiLz4KICA8Y2lyY2xlIGN4PSI4OCIgY3k9IjY1IiByPSIxLjIiIGZpbGw9IiNmZjJkNzgiIG9wYWNpdHk9Ii40Ii8+CiAgPGNpcmNsZSBjeD0iMTIiIGN5PSI3MiIgcj0iLjgiIGZpbGw9IiNmZjJkNzgiIG9wYWNpdHk9Ii41Ii8+CiAgPHRleHQgeD0iNzQiIHk9Ijg1IiBmb250LXNpemU9IjkiIGZpbGw9IiNmZjJkNzgiIG9wYWNpdHk9Ii42Ij7imIU8L3RleHQ+CiAgPHRleHQgeD0iMTQiIHk9Ijg4IiBmb250LXNpemU9IjgiIGZpbGw9IiNmZjJkNzgiIG9wYWNpdHk9Ii40Ij7imIU8L3RleHQ+CiAgPCEtLSBoYW5nZXIgcm9kIC0tPgogIDxsaW5lIHgxPSIxOCIgeTE9IjI4IiB4Mj0iODIiIHkyPSIyOCIgc3Ryb2tlPSIjZmYyZDc4IiBzdHJva2Utd2lkdGg9IjIuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPCEtLSBoYW5nZXIgaG9vayAtLT4KICA8cGF0aCBkPSJNNTAgMjggUTUwIDE4IDU3IDE4IFE2NCAxOCA2NCAyNCBRNjQgMjggNTggMjkiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmMmQ3OCIgc3Ryb2tlLXdpZHRoPSIyLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDwhLS0gZHJlc3Mgc2hhcGUgLS0+CiAgPHBhdGggZD0iTTMzIDI4IEwyMCA0MiBMMjkgNDYgTDI5IDgwIEw3MSA4MCBMNzEgNDYgTDgwIDQyIEw2NyAyOCBMNjAgMzQgUTU1IDM5IDUwIDM5IFE0NSAzOSA0MCAzNCBaIiBmaWxsPSIjZmYyZDc4IiBvcGFjaXR5PSIuODgiLz4KICA8IS0tIGRyZXNzIHNoaW5lIC0tPgogIDxwYXRoIGQ9Ik0zNiAzOCBMMzYgNzIiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjE4KSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNNDIgMzUgTDQyIDc1IiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4xKSIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDwhLS0gYmVsdCAtLT4KICA8cmVjdCB4PSIyOSIgeT0iNTIiIHdpZHRoPSI0MiIgaGVpZ2h0PSI1IiByeD0iMiIgZmlsbD0icmdiYSgwLDAsMCwwLjIpIi8+Cjwvc3ZnPg==",sizes:'192x192',type:'image/svg+xml'}]};
+    const b=new Blob([JSON.stringify(m)],{type:'application/manifest+json'});
+    document.head.appendChild(Object.assign(document.createElement('link'),{rel:'manifest',href:URL.createObjectURL(b)}));
+  }catch(e){}
+
+  init();
+</script>
+</body>
+</html>
