@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+  <meta name="apple-mobile-web-app-title" content="Recipe Box"/>
+  <meta name="theme-color" content="#f5ede0"/>
+  <title>🌿 My Recipe Box</title>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Playfair+Display:ital,wght@0,700;1,400&family=Lora:ital,wght@0,400;1,400&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --paper:  #f5ede0;
+      --paper2: #fdf6eb;
+      --card:   #fffaf2;
+      --dark:   #2a1a0a;
+      --brown:  #6b3a1a;
+      --ink:    #3a2510;
+      --sage:   #7a9a68;
+      --rose:   #d4726a;
+      --sky:    #7ab0cc;
+      --lemon:  #e8c84a;
+      --mint:   #7ac8a8;
+      --lavender:#b090d0;
+      --peach:  #e8a878;
+      --soft:   rgba(42,26,10,0.45);
+      --softer: rgba(42,26,10,0.25);
+      --border: rgba(90,52,26,0.15);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html{background:var(--paper);}
+    body{
+      font-family:'Lora',serif;
+      color:var(--ink);
+      min-height:100dvh;
+      background:var(--paper);
+      background-image:
+        /* subtle paper lines */
+        repeating-linear-gradient(180deg,transparent,transparent 27px,rgba(90,52,26,0.05) 27px,rgba(90,52,26,0.05) 28px),
+        /* texture */
+        url("data:image/svg+xml,%3Csvg width='200' height='200' viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    }
+    .app{max-width:480px;margin:0 auto;padding:0 0 100px;}
+
+    /* ── Header ── */
+    .header{
+      padding:max(env(safe-area-inset-top,44px),44px) 20px 0;
+      text-align:center;
+      position:relative;
+    }
+    /* Doodle border across top */
+    .header-doodle{
+      font-size:1rem;letter-spacing:6px;color:var(--softer);
+      margin-bottom:8px;
+      font-family:'Caveat',cursive;
+    }
+    .header-banner{
+      display:inline-block;
+      background:var(--rose);
+      color:#fff;
+      font-family:'Caveat',cursive;
+      font-size:2.6rem;
+      font-weight:700;
+      padding:8px 28px 6px;
+      transform:rotate(-1.2deg);
+      box-shadow:3px 3px 0 rgba(0,0,0,0.12);
+      letter-spacing:1px;
+      margin-bottom:4px;
+      position:relative;
+    }
+    /* Tape on banner */
+    .header-banner::before,.header-banner::after{
+      content:'';position:absolute;
+      height:18px;width:34px;
+      background:rgba(248,230,160,0.7);
+      top:50%;transform:translateY(-50%);
+      box-shadow:0 1px 2px rgba(0,0,0,0.1);
+    }
+    .header-banner::before{left:-14px;transform:translateY(-50%) rotate(-8deg);}
+    .header-banner::after{right:-14px;transform:translateY(-50%) rotate(8deg);}
+    .header-sub{
+      font-family:'Caveat',cursive;font-size:1.1rem;
+      color:var(--soft);font-weight:400;
+      margin-bottom:14px;
+    }
+    /* Scattered doodles */
+    .doodle-row{font-size:1.1rem;letter-spacing:10px;color:var(--softer);margin-bottom:16px;}
+
+    /* Search + add */
+    .search-row{display:flex;gap:8px;padding:0 4px 16px;}
+    .search-wrap{position:relative;flex:1;}
+    .search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--softer);font-size:.9rem;pointer-events:none;}
+    #searchInp{width:100%;background:var(--card);border:1.5px solid var(--border);border-radius:99px;padding:10px 14px 10px 34px;font-family:'Caveat',cursive;font-size:.95rem;color:var(--ink);outline:none;box-shadow:2px 2px 0 rgba(90,52,26,0.08);}
+    #searchInp::placeholder{color:var(--softer);font-style:italic;}
+    #searchInp:focus{border-color:var(--sage);}
+    .add-btn{
+      background:var(--sage);border:none;border-radius:10px;
+      color:#fff;font-family:'Caveat',cursive;font-size:.95rem;font-weight:700;
+      padding:10px 16px;cursor:pointer;white-space:nowrap;
+      box-shadow:2px 3px 0 rgba(0,0,0,0.15);
+      transform:rotate(.5deg);
+      transition:transform .15s,box-shadow .15s;
+    }
+    .add-btn:active{transform:rotate(.5deg) scale(.95);box-shadow:1px 1px 0 rgba(0,0,0,0.1);}
+
+    /* ── Filter stickers ── */
+    .filter-bar{
+      display:flex;gap:8px;overflow-x:auto;
+      padding:4px 16px 16px;
+      scrollbar-width:none;
+    }
+    .filter-bar::-webkit-scrollbar{display:none;}
+    .fchip{
+      flex-shrink:0;padding:5px 14px;
+      border-radius:4px;
+      border:1.5px solid var(--border);
+      background:var(--card);
+      font-family:'Caveat',cursive;font-size:.88rem;
+      color:var(--soft);cursor:pointer;
+      box-shadow:1px 2px 0 rgba(90,52,26,0.08);
+      transition:all .14s;white-space:nowrap;
+    }
+    .fchip.on{
+      color:#fff;border-color:transparent;
+      box-shadow:2px 3px 0 rgba(0,0,0,0.15);
+      transform:rotate(-.5deg) scale(1.04);
+    }
+    .fchip:hover:not(.on){transform:scale(1.04);}
+
+    /* ── Daily feature ── */
+    .section-label{
+      font-family:'Caveat',cursive;font-size:1.05rem;font-weight:700;
+      color:var(--soft);letter-spacing:2px;
+      padding:0 18px 10px;
+      display:flex;align-items:center;gap:8px;
+    }
+    .section-label::after{content:'';flex:1;height:1.5px;background:repeating-linear-gradient(90deg,var(--border) 0,var(--border) 6px,transparent 6px,transparent 12px);}
+
+    .featured-wrap{padding:0 16px 8px;position:relative;}
+    .featured-card{
+      background:var(--card);
+      border-radius:4px;
+      border:1.5px solid rgba(90,52,26,0.12);
+      padding:16px 16px 14px;
+      position:relative;
+      box-shadow:3px 4px 0 rgba(90,52,26,0.12);
+      cursor:pointer;
+      transition:transform .18s,box-shadow .18s;
+      overflow:visible;
+    }
+    .featured-card:active{transform:scale(.98);}
+    /* Washi tape on featured */
+    .featured-card::before{
+      content:'Today\'s Pick ✿';
+      position:absolute;top:-13px;left:50%;transform:translateX(-50%);
+      background:var(--lemon);color:rgba(80,50,10,0.8);
+      font-family:'Caveat',cursive;font-size:.82rem;font-weight:700;
+      padding:3px 16px;letter-spacing:1px;
+      box-shadow:0 2px 4px rgba(0,0,0,0.1);
+      white-space:nowrap;
+    }
+    .fc-top{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+    .fc-emoji{font-size:2.8rem;line-height:1;flex-shrink:0;filter:drop-shadow(1px 2px 3px rgba(42,26,10,0.15));}
+    .fc-title{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;color:var(--dark);line-height:1.3;margin-bottom:4px;}
+    .fc-meta{font-family:'Caveat',cursive;font-size:.82rem;color:var(--soft);display:flex;gap:8px;flex-wrap:wrap;}
+    .fc-desc{font-size:.85rem;color:var(--soft);font-style:italic;line-height:1.55;}
+    .fc-stars{font-size:.88rem;margin-top:5px;}
+    .no-feature{
+      text-align:center;padding:24px;
+      font-family:'Caveat',cursive;font-size:1rem;
+      color:var(--softer);font-style:italic;
+    }
+
+    /* ── Recipe cards ── */
+    .cards-wrap{padding:0 12px;}
+    .cards-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+    }
+
+    .recipe-card{
+      background:var(--card);
+      border-radius:4px;
+      border:1.5px solid rgba(90,52,26,0.1);
+      padding:12px 11px 10px;
+      cursor:pointer;
+      position:relative;
+      overflow:visible;
+      box-shadow:3px 3px 0 rgba(90,52,26,0.1);
+      transition:transform .18s,box-shadow .18s;
+    }
+    .recipe-card:active{box-shadow:1px 1px 0 rgba(90,52,26,0.08);}
+
+    /* Washi tape corner */
+    .washi{
+      position:absolute;
+      width:28px;height:14px;
+      top:-8px;left:50%;
+      transform:translateX(-50%);
+      opacity:.85;
+      box-shadow:0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .rc-emoji{font-size:1.8rem;display:block;margin-bottom:6px;line-height:1;}
+    .rc-title{
+      font-family:'Caveat',cursive;font-size:.95rem;font-weight:700;
+      color:var(--dark);line-height:1.35;
+      margin-bottom:5px;
+      display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+    }
+    .rc-cat{
+      display:inline-block;
+      font-family:'Caveat',cursive;font-size:.72rem;font-weight:700;
+      padding:2px 8px;border-radius:3px;
+      margin-bottom:4px;
+      box-shadow:1px 1px 0 rgba(0,0,0,0.1);
+      color:#fff;
+      white-space:nowrap;
+    }
+    .rc-time{font-family:'Caveat',cursive;font-size:.72rem;color:var(--softer);}
+    .rc-stars{font-size:.72rem;margin-top:3px;}
+
+    /* Sticker doodle overlays scattered */
+    .recipe-card .sticker{
+      position:absolute;
+      font-size:1rem;
+      bottom:-8px;right:-4px;
+      transform:rotate(15deg);
+      filter:drop-shadow(1px 1px 2px rgba(0,0,0,0.15));
+      pointer-events:none;
+    }
+
+    /* ── Empty ── */
+    .empty{
+      text-align:center;padding:50px 24px;display:none;
+    }
+    .empty.show{display:block;}
+    .empty-icon{font-size:3.5rem;margin-bottom:12px;}
+    .empty-msg{font-family:'Caveat',cursive;font-size:1.2rem;color:var(--soft);}
+    .empty-sub{font-size:.88rem;color:var(--softer);font-style:italic;margin-top:4px;}
+
+    /* ── FAB ── */
+    .fab{
+      position:fixed;bottom:max(env(safe-area-inset-bottom,24px),28px);right:18px;
+      z-index:50;width:58px;height:58px;border-radius:50%;
+      background:var(--rose);border:2.5px solid #fff;
+      color:#fff;font-size:1.6rem;
+      display:flex;align-items:center;justify-content:center;
+      cursor:pointer;
+      box-shadow:3px 4px 0 rgba(180,80,70,0.4);
+      transition:transform .18s,box-shadow .18s;
+    }
+    .fab:active{transform:scale(.93);box-shadow:1px 2px 0 rgba(180,80,70,0.3);}
+
+    /* ── Overlays ── */
+    .overlay{position:fixed;inset:0;z-index:100;background:rgba(42,26,10,0.5);display:flex;align-items:flex-end;opacity:0;pointer-events:none;transition:opacity .26s;}
+    .overlay.open{opacity:1;pointer-events:all;}
+    .sheet{
+      width:100%;max-height:92dvh;overflow-y:auto;
+      background:var(--paper2);
+      border-top:3px solid var(--rose);
+      border-left:1px solid var(--border);
+      border-right:1px solid var(--border);
+      border-radius:22px 22px 0 0;
+      padding:14px 22px max(env(safe-area-inset-bottom,28px),28px);
+      transform:translateY(100%);
+      transition:transform .34s cubic-bezier(.32,.72,0,1);
+      background-image:repeating-linear-gradient(180deg,transparent,transparent 27px,rgba(90,52,26,0.04) 27px,rgba(90,52,26,0.04) 28px);
+    }
+    .overlay.open .sheet{transform:translateY(0);}
+    .handle{width:36px;height:3px;background:var(--border);margin:0 auto 18px;border-radius:99px;}
+    .sheet-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
+    .sheet-title{font-family:'Caveat',cursive;font-size:2rem;font-weight:700;color:var(--dark);}
+    .sheet-close{background:rgba(212,114,106,0.12);border:1px solid rgba(212,114,106,0.3);border-radius:8px;color:var(--soft);font-size:.85rem;font-weight:700;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .18s;}
+    .sheet-close:hover{background:rgba(212,114,106,0.22);color:var(--rose);}
+    .sheet-divider{height:1.5px;background:repeating-linear-gradient(90deg,var(--border) 0,var(--border) 8px,transparent 8px,transparent 16px);margin:12px 0 18px;}
+    .field{margin-bottom:16px;}
+    .field>label{display:block;font-family:'Caveat',cursive;font-size:.9rem;font-weight:700;letter-spacing:1px;color:var(--soft);margin-bottom:8px;}
+    .inp{width:100%;background:#fff;border:1.5px solid var(--border);border-radius:6px;padding:11px 14px;font-family:'Caveat',cursive;font-size:1rem;color:var(--ink);outline:none;-webkit-appearance:none;transition:border-color .2s;box-shadow:inset 0 1px 3px rgba(90,52,26,0.06);}
+    .inp:focus{border-color:var(--sage);}
+    .inp::placeholder{color:var(--softer);font-style:italic;}
+    textarea.inp{resize:vertical;min-height:80px;line-height:1.6;}
+    .two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+    .star-picker{display:flex;gap:8px;}
+    .star-pick{font-size:1.9rem;cursor:pointer;color:rgba(42,26,10,0.1);transition:all .12s;}
+    .star-pick.lit{color:var(--lemon);}
+    .cat-row{display:flex;flex-wrap:wrap;gap:7px;}
+    .cat-btn{padding:7px 14px;border-radius:4px;border:1.5px solid var(--border);background:var(--card);font-family:'Caveat',cursive;font-size:.9rem;color:var(--soft);cursor:pointer;transition:all .15s;white-space:nowrap;box-shadow:1px 2px 0 rgba(90,52,26,0.07);}
+    .cat-btn.on{color:#fff;border-color:transparent;box-shadow:2px 3px 0 rgba(0,0,0,0.12);}
+    .ingr-list{display:flex;flex-direction:column;gap:6px;margin-bottom:8px;}
+    .ingr-row{display:flex;gap:8px;align-items:center;}
+    .ingr-del{background:none;border:none;color:var(--rose);cursor:pointer;font-size:.85rem;opacity:.4;padding:4px 8px;transition:opacity .18s;}
+    .ingr-del:hover{opacity:.9;}
+    .add-ingr-btn{background:transparent;border:1.5px dashed rgba(122,154,104,0.4);border-radius:6px;padding:9px;font-family:'Caveat',cursive;font-size:.9rem;color:var(--soft);cursor:pointer;width:100%;transition:all .18s;}
+    .add-ingr-btn:hover{border-color:var(--sage);color:var(--sage);}
+    .btn-primary{width:100%;padding:13px;background:var(--rose);border:none;border-radius:8px;font-family:'Caveat',cursive;font-size:1.05rem;font-weight:700;letter-spacing:1px;color:#fff;cursor:pointer;box-shadow:2px 3px 0 rgba(180,80,70,0.35);transition:all .2s;margin-top:4px;}
+    .btn-primary:active{transform:scale(.97);box-shadow:1px 1px 0 rgba(180,80,70,0.2);}
+    .btn-danger{padding:12px 16px;background:transparent;border:1.5px solid rgba(192,104,88,0.35);border-radius:8px;font-family:'Caveat',cursive;font-size:.95rem;color:var(--rose);cursor:pointer;}
+    .btn-row{display:flex;gap:10px;margin-top:6px;}
+    .btn-ghost{background:transparent;border:1.5px solid var(--border);border-radius:8px;font-family:'Caveat',cursive;font-size:.92rem;color:var(--soft);padding:9px 16px;cursor:pointer;transition:all .2s;}
+    .btn-ghost:hover{border-color:var(--sage);color:var(--sage);}
+
+    /* Detail sheet */
+    .detail-emoji{font-size:3.5rem;text-align:center;display:block;margin-bottom:8px;filter:drop-shadow(1px 3px 4px rgba(42,26,10,0.15));}
+    .detail-title{font-family:'Playfair Display',serif;font-style:italic;font-size:1.6rem;color:var(--dark);text-align:center;margin-bottom:10px;}
+    .detail-meta{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-bottom:10px;font-family:'Caveat',cursive;font-size:.9rem;color:var(--soft);}
+    .d-section{
+      font-family:'Caveat',cursive;font-size:.92rem;font-weight:700;
+      letter-spacing:2px;text-transform:uppercase;color:var(--soft);
+      margin:16px 0 8px;display:flex;align-items:center;gap:8px;
+    }
+    .d-section::after{content:'';flex:1;height:1.5px;background:repeating-linear-gradient(90deg,var(--border) 0,var(--border) 6px,transparent 6px,transparent 12px);}
+    .ingr-item{font-family:'Caveat',cursive;font-size:.95rem;color:var(--ink);padding:7px 0;border-bottom:1px dashed rgba(90,52,26,0.1);}
+    .ingr-item:last-child{border-bottom:none;}
+    .step-item{display:flex;gap:10px;padding:10px 0;border-bottom:1px dashed rgba(90,52,26,0.08);}
+    .step-item:last-child{border-bottom:none;}
+    .step-num{font-family:'Caveat',cursive;font-size:1.2rem;font-weight:700;color:var(--rose);flex-shrink:0;width:22px;}
+    .step-text{font-family:'Caveat',cursive;font-size:.95rem;color:var(--ink);line-height:1.55;}
+
+    /* Toast */
+    .toast{position:fixed;bottom:max(env(safe-area-inset-bottom,20px),28px);left:50%;transform:translateX(-50%) translateY(14px);background:var(--dark);border:1px solid var(--sage);border-radius:8px;padding:11px 22px;font-family:'Caveat',cursive;font-size:.95rem;color:#c8e8b0;opacity:0;pointer-events:none;z-index:999;box-shadow:2px 3px 0 rgba(0,0,0,0.2);transition:opacity .22s,transform .3s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  </style>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+<div class="app">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-doodle">✦ ✿ ✦ ✿ ✦ ✿ ✦ ✿ ✦</div>
+    <div style="margin-bottom:6px">
+      <span class="header-banner">My Recipe Box</span>
+    </div>
+    <div class="header-sub">a little collection of beloved recipes ♡</div>
+    <div class="doodle-row">🌿 🍋 🥕 🌸 🍯</div>
+    <div class="search-row">
+      <div class="search-wrap">
+        <span class="search-icon">⌕</span>
+        <input type="search" id="searchInp" placeholder="Search recipes…" oninput="ST.search=this.value;render()"/>
+      </div>
+      <button class="add-btn" onclick="openAdd()">+ Add ✿</button>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filter-bar" id="filterBar"></div>
+
+  <!-- Daily Feature -->
+  <div class="section-label">✦ Today's Pick</div>
+  <div class="featured-wrap" id="featuredWrap"></div>
+
+  <!-- All Recipes -->
+  <div class="section-label" style="margin-top:12px" id="allLabel">✦ All Recipes</div>
+  <div class="cards-wrap">
+    <div class="cards-grid" id="cardsGrid"></div>
+    <div class="empty" id="empty">
+      <div class="empty-icon">🌿</div>
+      <div class="empty-msg">Your recipe box is empty!</div>
+      <div class="empty-sub">Tap + Add to write your first recipe card</div>
+    </div>
+  </div>
+
+</div>
+
+<button class="fab" onclick="openAdd()">✿</button>
+
+<!-- Add/Edit -->
+<div class="overlay" id="addOv" onclick="closeSheet('addOv')">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="handle"></div>
+    <div id="addContent"></div>
+  </div>
+</div>
+
+<!-- Detail -->
+<div class="overlay" id="detailOv" onclick="closeSheet('detailOv')">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="handle"></div>
+    <div id="detailContent"></div>
+  </div>
+</div>
+
+<script>
+  const CATS=['Breakfast','Lunch','Dinner','Dessert','Snack','Soup','Salad','Baking','Drinks','Other'];
+  const CAT_COLORS={Breakfast:'#d4943a',Lunch:'#7a9a68',Dinner:'#7060aa',Dessert:'#d4726a',Snack:'#c08840',Soup:'#5a88a8',Salad:'#5a9a6a',Baking:'#b07840',Drinks:'#5a9aaa',Other:'#9a7860'};
+  const WASHI_COLORS=['#f5c8c0','#c8e0c0','#c0d8f0','#f5e8a0','#e0c8f0','#f0d0a8','#c8f0e8'];
+  const STICKERS=['🌸','✿','⭐','🌿','♡','🍋','🌼','☁️','🌙','✦','🫶','🌱'];
+  const EMOJIS=['🥘','🍲','🥗','🍰','🥐','🍝','🥧','☕','🍵','🫐','🍋','🥩','🥦','🍄','🥕','🫙','🍯','🧁','🥞','🫕','🥨','🍜','🥮','🧇','🫖','🥙'];
+
+  let D={recipes:[]};
+  let ST={search:'',cat:'All'};
+  let RF={id:null,title:'',emoji:'🥘',category:'Dinner',rating:0,prepTime:'',cookTime:'',servings:'',description:'',ingredients:[''],steps:[''],notes:''};
+
+  const save=()=>{try{localStorage.setItem('recipebox1',JSON.stringify(D));}catch(e){}};
+  const load=()=>{try{const s=localStorage.getItem('recipebox1');if(s)D=JSON.parse(s);}catch(e){}};
+  const stars=(n,t=5)=>Array.from({length:t},(_,i)=>`<span style="color:${i<n?'#e8c84a':'rgba(42,26,10,0.1)'}">★</span>`).join('');
+
+  // Seeded shuffle for daily pick
+  function dailyPick(arr){
+    if(!arr.length) return null;
+    const d=new Date();
+    const seed=d.getFullYear()*10000+d.getMonth()*100+d.getDate();
+    return arr[(seed*2654435761>>>0)%arr.length];
+  }
+
+  // Deterministic rotation per recipe id
+  function cardRotation(id){
+    const hash=String(id).split('').reduce((a,c)=>a+c.charCodeAt(0),0);
+    const rots=[-2.5,-1.8,-1.2,-0.5,0.5,1.2,1.8,2.5];
+    return rots[hash%rots.length];
+  }
+  function washiColor(id){
+    const hash=String(id).split('').reduce((a,c)=>a+c.charCodeAt(0),0);
+    return WASHI_COLORS[hash%WASHI_COLORS.length];
+  }
+  function cardSticker(id){
+    const hash=String(id).split('').reduce((a,c)=>a+c.charCodeAt(0),0);
+    return STICKERS[(hash+3)%STICKERS.length];
+  }
+
+  function render(){
+    const cats=['All',...CATS];
+    document.getElementById('filterBar').innerHTML=cats.map((c,i)=>{
+      const colors=['#888',CAT_COLORS.Breakfast,CAT_COLORS.Lunch,CAT_COLORS.Dinner,CAT_COLORS.Dessert,CAT_COLORS.Snack,CAT_COLORS.Soup,CAT_COLORS.Salad,CAT_COLORS.Baking,CAT_COLORS.Drinks,CAT_COLORS.Other];
+      const bg=c==='All'?'#7a9a68':CAT_COLORS[c]||'#888';
+      return `<button class="fchip${ST.cat===c?' on':''}" onclick="ST.cat='${c}';render()" style="${ST.cat===c?`background:${bg}`:''}">
+        ${c}
+      </button>`;
+    }).join('');
+
+    // Daily feature
+    const pick=dailyPick(D.recipes);
+    const fw=document.getElementById('featuredWrap');
+    if(!pick){
+      fw.innerHTML=`<div class="no-feature">Add your first recipe and it'll be featured here! 🌿</div>`;
+    } else {
+      const c=CAT_COLORS[pick.category]||'#888';
+      fw.innerHTML=`
+        <div class="featured-card" onclick="openDetail(${pick.id})">
+          <div class="fc-top">
+            <div class="fc-emoji">${pick.emoji||'🥘'}</div>
+            <div>
+              <div class="fc-title">${pick.title}</div>
+              <div class="fc-meta">
+                <span style="background:${c}20;border:1px solid ${c}50;color:${c};padding:2px 9px;border-radius:3px;font-weight:700">${pick.category}</span>
+                ${pick.prepTime?`<span>⏱ ${pick.prepTime}</span>`:''}
+                ${pick.cookTime?`<span>🔥 ${pick.cookTime}</span>`:''}
+                ${pick.servings?`<span>🍽 ${pick.servings}</span>`:''}
+              </div>
+              ${pick.rating?`<div class="fc-stars">${stars(pick.rating)}</div>`:''}
+            </div>
+          </div>
+          ${pick.description?`<div class="fc-desc">${pick.description}</div>`:''}
+        </div>`;
+    }
+
+    // Card grid
+    let list=[...D.recipes];
+    if(ST.cat!=='All') list=list.filter(r=>r.category===ST.cat);
+    if(ST.search.trim()){const q=ST.search.toLowerCase();list=list.filter(r=>r.title.toLowerCase().includes(q)||r.category.toLowerCase().includes(q));}
+
+    const grid=document.getElementById('cardsGrid');
+    const empty=document.getElementById('empty');
+    const label=document.getElementById('allLabel');
+
+    label.textContent=`✦ All Recipes (${list.length})`;
+
+    if(!list.length){grid.innerHTML='';empty.classList.add('show');return;}
+    empty.classList.remove('show');
+
+    grid.innerHTML=list.map(r=>{
+      const rot=cardRotation(r.id);
+      const wc=washiColor(r.id);
+      const stk=cardSticker(r.id);
+      const c=CAT_COLORS[r.category]||'#888';
+      return `<div class="recipe-card" onclick="openDetail(${r.id})"
+        style="transform:rotate(${rot}deg)">
+        <div class="washi" style="background:${wc}"></div>
+        <span class="rc-emoji">${r.emoji||'🥘'}</span>
+        <div class="rc-title">${r.title}</div>
+        <span class="rc-cat" style="background:${c};font-size:.7rem">${r.category}</span>
+        <div class="rc-time">${[r.prepTime,r.cookTime].filter(Boolean).join(' · ')||''}</div>
+        ${r.rating?`<div class="rc-stars">${stars(r.rating)}</div>`:''}
+        <span class="sticker">${stk}</span>
+      </div>`;
+    }).join('');
+  }
+
+  function openDetail(id){
+    const r=D.recipes.find(x=>x.id===id); if(!r)return;
+    const c=CAT_COLORS[r.category]||'#888';
+    document.getElementById('detailContent').innerHTML=`
+      <div class="sheet-hd">
+        <button class="btn-ghost" style="padding:7px 14px;font-size:.85rem" onclick="closeSheet('detailOv');openAdd(${r.id})">✏️ Edit</button>
+        <button class="sheet-close" onclick="closeSheet('detailOv')">✕</button>
+      </div>
+      <div style="text-align:center;margin-bottom:16px">
+        <span class="detail-emoji">${r.emoji}</span>
+        <div class="detail-title">${r.title}</div>
+        <div class="detail-meta">
+          <span style="background:${c}20;border:1px solid ${c}50;color:${c};padding:3px 12px;border-radius:4px;font-weight:700">${r.category}</span>
+          ${r.rating?stars(r.rating):''}
+        </div>
+        <div class="detail-meta">
+          ${r.prepTime?`<span>🕐 Prep: ${r.prepTime}</span>`:''}
+          ${r.cookTime?`<span>🔥 Cook: ${r.cookTime}</span>`:''}
+          ${r.servings?`<span>🍽 ${r.servings}</span>`:''}
+        </div>
+        ${r.description?`<div style="font-family:'Caveat',cursive;font-size:.95rem;color:var(--soft);font-style:italic">${r.description}</div>`:''}
+      </div>
+      ${r.ingredients?.length?`<div class="d-section">Ingredients</div>${r.ingredients.map(i=>`<div class="ingr-item"><span style="color:var(--rose);margin-right:8px">✦</span>${i}</div>`).join('')}`:''}
+      ${r.steps?.length?`<div class="d-section">Method</div>${r.steps.map((s,i)=>`<div class="step-item"><div class="step-num">${i+1}.</div><div class="step-text">${s}</div></div>`).join('')}`:''}
+      ${r.notes?`<div class="d-section">Notes ♡</div><div style="font-family:'Caveat',cursive;font-size:.95rem;color:var(--soft);line-height:1.6;margin-bottom:8px">${r.notes}</div>`:''}`;
+    openSheet('detailOv');
+  }
+
+  function openAdd(editId){
+    if(editId){const r=D.recipes.find(x=>x.id===editId);if(r)RF={...r,ingredients:[...(r.ingredients||[''])],steps:[...(r.steps||[''])]};}
+    else RF={id:null,title:'',emoji:'🥘',category:'Dinner',rating:0,prepTime:'',cookTime:'',servings:'',description:'',ingredients:[''],steps:[''],notes:''};
+    renderForm(); openSheet('addOv');
+    setTimeout(()=>document.getElementById('titleInp')?.focus(),360);
+  }
+
+  function renderForm(){
+    document.getElementById('addContent').innerHTML=`
+      <div class="sheet-hd">
+        <div class="sheet-title">${RF.id?'✏️ Edit Recipe':'✿ New Recipe'}</div>
+        <button class="sheet-close" onclick="closeSheet('addOv')">✕</button>
+      </div>
+      <div class="sheet-divider"></div>
+      <div class="field"><label>Emoji 🎨</label>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          ${EMOJIS.map(e=>`<button onclick="RF.emoji='${e}';renderForm()" style="font-size:1.3rem;width:38px;height:38px;border-radius:6px;cursor:pointer;background:${RF.emoji===e?'rgba(122,154,104,0.18)':'#fff'};border:1.5px solid ${RF.emoji===e?'var(--sage)':'var(--border)'};transition:all .15s">${e}</button>`).join('')}
+        </div>
+      </div>
+      <div class="field"><label>Recipe Name ✦</label>
+        <input class="inp" id="titleInp" type="text" value="${RF.title}" placeholder="e.g. Grandma's Apple Pie…" maxlength="80" oninput="RF.title=this.value"/>
+      </div>
+      <div class="field"><label>Category</label>
+        <div class="cat-row">${CATS.map(c=>{const bg=CAT_COLORS[c];return `<button class="cat-btn${RF.category===c?' on':''}" onclick="RF.category='${c}';renderForm()" style="${RF.category===c?`background:${bg};`:''}"><span>${c}</span></button>`;}).join('')}</div>
+      </div>
+      <div class="field"><label>Rating ★</label>
+        <div class="star-picker">${[1,2,3,4,5].map(n=>`<span class="star-pick${n<=RF.rating?' lit':''}" onclick="RF.rating=RF.rating===${n}?0:${n};renderForm()">★</span>`).join('')}</div>
+      </div>
+      <div class="two-col" style="margin-bottom:16px">
+        <div class="field" style="margin:0"><label>Prep Time</label><input class="inp" type="text" value="${RF.prepTime}" placeholder="20 mins" maxlength="20" oninput="RF.prepTime=this.value"/></div>
+        <div class="field" style="margin:0"><label>Cook Time</label><input class="inp" type="text" value="${RF.cookTime}" placeholder="45 mins" maxlength="20" oninput="RF.cookTime=this.value"/></div>
+      </div>
+      <div class="field"><label>Servings</label><input class="inp" type="text" value="${RF.servings}" placeholder="e.g. 4 people" maxlength="20" oninput="RF.servings=this.value"/></div>
+      <div class="field"><label>Description</label><input class="inp" type="text" value="${RF.description}" placeholder="A little note about this recipe…" maxlength="150" oninput="RF.description=this.value"/></div>
+      <div class="field"><label>Ingredients 🥕</label>
+        <div class="ingr-list">${RF.ingredients.map((v,i)=>`<div class="ingr-row"><input class="inp" type="text" value="${v}" placeholder="e.g. 2 cups flour" oninput="RF.ingredients[${i}]=this.value" onkeydown="if(event.key==='Enter'){addIngr();event.preventDefault()}"/><button class="ingr-del" onclick="removeIngr(${i})">✕</button></div>`).join('')}</div>
+        <button class="add-ingr-btn" onclick="addIngr()">+ Add ingredient</button>
+      </div>
+      <div class="field"><label>Steps ✦</label>
+        <div class="ingr-list">${RF.steps.map((v,i)=>`<div class="ingr-row"><input class="inp" type="text" value="${v}" placeholder="Step ${i+1}…" oninput="RF.steps[${i}]=this.value"/><button class="ingr-del" onclick="removeStep(${i})">✕</button></div>`).join('')}</div>
+        <button class="add-ingr-btn" onclick="addStep()">+ Add step</button>
+      </div>
+      <div class="field"><label>Notes ♡</label><textarea class="inp" placeholder="Tips, swaps, memories…" oninput="RF.notes=this.value">${RF.notes}</textarea></div>
+      <div class="btn-row">
+        ${RF.id?`<button class="btn-danger" onclick="deleteRecipe(${RF.id})">Delete</button>`:''}
+        <button class="btn-primary" onclick="saveRecipe()">${RF.id?'Save Changes ✦':'Add to Box ✿'}</button>
+      </div>`;
+  }
+
+  function addIngr(){RF.ingredients.push('');renderForm();}
+  function removeIngr(i){RF.ingredients.splice(i,1);if(!RF.ingredients.length)RF.ingredients=[''];renderForm();}
+  function addStep(){RF.steps.push('');renderForm();}
+  function removeStep(i){RF.steps.splice(i,1);if(!RF.steps.length)RF.steps=[''];renderForm();}
+
+  function saveRecipe(){
+    const t=(document.getElementById('titleInp')?.value||RF.title).trim();
+    if(!t){toast('Give your recipe a name 🌿');return;}
+    RF.title=t;
+    RF.ingredients=RF.ingredients.filter(x=>x.trim());
+    RF.steps=RF.steps.filter(x=>x.trim());
+    if(RF.id){const i=D.recipes.findIndex(r=>r.id===RF.id);if(i>-1)D.recipes[i]={...RF};toast('✿ Recipe saved!');}
+    else{D.recipes.push({...RF,id:Date.now()});toast('✿ Added to your recipe box!');}
+    save(); closeSheet('addOv'); render();
+  }
+
+  function deleteRecipe(id){
+    D.recipes=D.recipes.filter(r=>r.id!==id);
+    save(); closeSheet('addOv'); closeSheet('detailOv'); render(); toast('Recipe removed');
+  }
+
+  function openSheet(id){document.getElementById(id).classList.add('open');document.body.style.overflow='hidden';}
+  function closeSheet(id){document.getElementById(id).classList.remove('open');document.body.style.overflow='';}
+
+  let tt;
+  function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>el.classList.remove('show'),2300);}
+
+  load(); render();
+
+  try{
+    const m={name:'My Recipe Box',short_name:'Recipes',start_url:'./',display:'standalone',background_color:'#f5ede0',theme_color:'#f5ede0',icons:[{src:"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj4KICA8cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjIyIiBmaWxsPSIjZjBlMGMwIi8+CiAgPCEtLSBwYXBlciB0ZXh0dXJlIGxpbmVzIC0tPgogIDxsaW5lIHgxPSIwIiB5MT0iNDAiIHgyPSIxMDAiIHkyPSI0MCIgc3Ryb2tlPSJyZ2JhKDkwLDUyLDI2LDAuMDYpIiBzdHJva2Utd2lkdGg9IjEiLz4KICA8bGluZSB4MT0iMCIgeTE9IjU1IiB4Mj0iMTAwIiB5Mj0iNTUiIHN0cm9rZT0icmdiYSg5MCw1MiwyNiwwLjA2KSIgc3Ryb2tlLXdpZHRoPSIxIi8+CiAgPGxpbmUgeDE9IjAiIHkxPSI3MCIgeDI9IjEwMCIgeTI9IjcwIiBzdHJva2U9InJnYmEoOTAsNTIsMjYsMC4wNikiIHN0cm9rZS13aWR0aD0iMSIvPgogIDwhLS0gYm94IHNoYWRvdyAtLT4KICA8cmVjdCB4PSIyMiIgeT0iNTYiIHdpZHRoPSI2MCIgaGVpZ2h0PSIzNiIgcng9IjUiIGZpbGw9InJnYmEoNDIsMjYsMTAsMC4xMikiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDMsMykiLz4KICA8IS0tIGJveCBib2R5IC0tPgogIDxyZWN0IHg9IjIyIiB5PSI1NiIgd2lkdGg9IjYwIiBoZWlnaHQ9IjM2IiByeD0iNSIgZmlsbD0iIzlhNWEyOCIgc3Ryb2tlPSIjYzQ4ODNhIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8IS0tIGJveCBpbnNpZGUgc2hhZG93IC0tPgogIDxyZWN0IHg9IjI2IiB5PSI2MCIgd2lkdGg9IjUyIiBoZWlnaHQ9IjI4IiByeD0iMyIgZmlsbD0icmdiYSgwLDAsMCwwLjE1KSIvPgogIDwhLS0gbGlkIC0tPgogIDxyZWN0IHg9IjE5IiB5PSI0MiIgd2lkdGg9IjY2IiBoZWlnaHQ9IjE4IiByeD0iNiIgZmlsbD0iI2M0ODgzYSIgc3Ryb2tlPSIjZTBhODQ4IiBzdHJva2Utd2lkdGg9IjIiLz4KICA8IS0tIGxpZCBrbm9iIC0tPgogIDxyZWN0IHg9IjQxIiB5PSIzNiIgd2lkdGg9IjE4IiBoZWlnaHQ9IjExIiByeD0iMyIgZmlsbD0iI2UwYzA2MCIgc3Ryb2tlPSIjYzRhMDMwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgogIDwhLS0gcmVjaXBlIGNhcmQgc3RpY2tpbmcgb3V0IG9mIGJveCAtLT4KICA8cmVjdCB4PSIyOCIgeT0iMzQiIHdpZHRoPSI0NCIgaGVpZ2h0PSIzMiIgcng9IjMiIGZpbGw9IiNmZmY5ZWUiIHN0cm9rZT0icmdiYSg5MCw1MiwyNiwwLjE4KSIgc3Ryb2tlLXdpZHRoPSIxLjIiLz4KICA8IS0tIGNhcmQgY29sb3Igc3RyaXAgLS0+CiAgPHJlY3QgeD0iMjgiIHk9IjM0IiB3aWR0aD0iNDQiIGhlaWdodD0iNCIgcng9IjMiIGZpbGw9IiNjNDg4M2EiLz4KICA8IS0tIGNhcmQgbGluZXMgLS0+CiAgPGxpbmUgeDE9IjM1IiB5MT0iNDQiIHgyPSI2NCIgeTI9IjQ0IiBzdHJva2U9InJnYmEoOTAsNTIsMjYsMC4xNSkiIHN0cm9rZS13aWR0aD0iMS41Ii8+CiAgPGxpbmUgeDE9IjM1IiB5MT0iNTAiIHgyPSI2MCIgeTI9IjUwIiBzdHJva2U9InJnYmEoOTAsNTIsMjYsMC4xKSIgc3Ryb2tlLXdpZHRoPSIxLjUiLz4KICA8bGluZSB4MT0iMzUiIHkxPSI1NiIgeDI9IjU4IiB5Mj0iNTYiIHN0cm9rZT0icmdiYSg5MCw1MiwyNiwwLjEpIiBzdHJva2Utd2lkdGg9IjEuMiIvPgogIDwhLS0gd2FzaGkgdGFwZSBvbiBjYXJkIC0tPgogIDxyZWN0IHg9IjQwIiB5PSIzMSIgd2lkdGg9IjIwIiBoZWlnaHQ9IjgiIHJ4PSIxIiBmaWxsPSJyZ2JhKDEyMiwyMDAsMTY4LDAuNjUpIi8+CiAgPCEtLSBmbG93ZXIgc3RpY2tlciAtLT4KICA8dGV4dCB4PSI2NCIgeT0iODgiIGZvbnQtc2l6ZT0iMTUiPvCfjL88L3RleHQ+Cjwvc3ZnPg==",sizes:'192x192',type:'image/svg+xml'}]};
+    const b=new Blob([JSON.stringify(m)],{type:'application/manifest+json'});
+    document.head.appendChild(Object.assign(document.createElement('link'),{rel:'manifest',href:URL.createObjectURL(b)}));
+  }catch(e){}
+</script>
+</body>
+</html>
