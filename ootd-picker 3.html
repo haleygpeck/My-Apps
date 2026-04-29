@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+  <meta name="apple-mobile-web-app-title" content="My Closet"/>
+  <meta name="theme-color" content="#f9f0f0"/>
+  <title>🌸 My Closet</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Lora:ital,wght@0,400;0,500;1,400&family=Caveat:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root{
+      --bg:      #fdf6f0;
+      --cream:   #fff9f5;
+      --blush:   #f5ddd8;
+      --blush2:  #edc8c0;
+      --rose:    #c97a7a;
+      --rose-lt: #e8a0a0;
+      --rose-dk: #a05858;
+      --gold:    #c8965a;
+      --gold-lt: #e0b87a;
+      --gold-dim:rgba(200,150,90,0.15);
+      --text:    #3a2020;
+      --soft:    rgba(58,32,32,0.48);
+      --softer:  rgba(58,32,32,0.25);
+      --border:  rgba(200,120,100,0.18);
+      --border2: rgba(200,150,90,0.2);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html{background:var(--bg);}
+    body{
+      font-family:'Lora',serif;color:var(--text);
+      min-height:100dvh;background:var(--bg);
+      background-image:
+        radial-gradient(ellipse 100% 40% at 50% 0%,rgba(245,200,190,0.3) 0%,transparent 60%),
+        url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23c97a7a' fill-opacity='0.04'%3E%3Cpath d='M30 5 Q32 12 37 12 Q32 14 30 19 Q28 14 23 12 Q28 12 30 5z'/%3E%3Ccircle cx='10' cy='40' r='1.2'/%3E%3Ccircle cx='50' cy='25' r='.8'/%3E%3C/g%3E%3C/svg%3E");
+    }
+    .app{max-width:480px;margin:0 auto;padding:0 0 90px;}
+
+    /* ── Header ── */
+    .header{
+      background:linear-gradient(180deg,#f9ede8 0%,var(--bg) 100%);
+      padding:max(env(safe-area-inset-top,44px),44px) 20px 16px;
+      border-bottom:1px solid var(--border);
+      position:relative;text-align:center;
+    }
+    .header::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(to right,transparent,var(--rose-lt),var(--gold-lt),var(--rose-lt),transparent);}
+    .app-eyebrow{font-family:'Caveat',cursive;font-size:.9rem;letter-spacing:3px;color:var(--rose-lt);margin-bottom:4px;}
+    .app-title{font-family:'Playfair Display',serif;font-size:2.2rem;font-weight:700;font-style:italic;color:var(--rose-dk);text-shadow:0 2px 10px rgba(200,100,100,0.15);}
+    .app-sub{font-style:italic;font-size:.82rem;color:var(--soft);margin-top:3px;}
+
+    /* ── Tab bar ── */
+    .tab-bar{display:flex;background:var(--cream);border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;}
+    .tab-bar::-webkit-scrollbar{display:none;}
+    .tab-btn{flex:1;padding:12px 8px;background:none;border:none;font-family:'Caveat',cursive;font-size:.88rem;font-weight:600;letter-spacing:.5px;color:var(--soft);cursor:pointer;border-bottom:2px solid transparent;transition:all .18s;white-space:nowrap;min-width:70px;}
+    .tab-btn.active{color:var(--rose-dk);border-bottom-color:var(--rose);}
+    .tab-panel{display:none;}
+    .tab-panel.active{display:block;}
+
+    /* ── Section label ── */
+    .section-lbl{font-family:'Caveat',cursive;font-size:1rem;font-weight:700;letter-spacing:1px;color:var(--rose-dk);padding:16px 18px 10px;display:flex;align-items:center;gap:8px;}
+    .section-lbl::after{content:'';flex:1;height:1px;background:linear-gradient(to right,var(--border),transparent);}
+
+    /* ── Suggestion card ── */
+    .suggestion-wrap{padding:0 16px 8px;}
+    .suggestion-card{
+      background:linear-gradient(135deg,#fff5f2,#fdf0ec);
+      border:1px solid var(--blush2);border-radius:16px;
+      padding:16px;position:relative;overflow:hidden;
+      box-shadow:0 4px 16px rgba(200,100,100,0.08);
+    }
+    .suggestion-card::before{content:'🌸';position:absolute;right:14px;top:12px;font-size:1.4rem;opacity:.3;}
+    .sug-label{font-family:'Caveat',cursive;font-size:.8rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--rose);margin-bottom:8px;}
+    .sug-vibe-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+    .sug-vibe{padding:5px 13px;border-radius:99px;border:1px solid var(--border);background:transparent;font-family:'Caveat',cursive;font-size:.82rem;color:var(--soft);cursor:pointer;transition:all .14s;white-space:nowrap;}
+    .sug-vibe.on{background:var(--rose);border-color:var(--rose);color:#fff;}
+    .sug-btn{width:100%;padding:12px;background:linear-gradient(135deg,var(--rose),var(--rose-dk));border:none;border-radius:10px;font-family:'Caveat',cursive;font-size:1rem;font-weight:700;color:#fff;cursor:pointer;box-shadow:0 3px 12px rgba(200,100,100,0.3);transition:all .2s;}
+    .sug-btn:active{transform:scale(.97);}
+    .sug-result{margin-top:12px;display:none;}
+    .sug-result.show{display:block;}
+    .sug-outfit{
+      display:flex;gap:10px;align-items:center;
+      background:var(--cream);border:1px solid var(--border);border-radius:10px;
+      padding:10px 12px;
+    }
+    .sug-photo{width:72px;height:72px;border-radius:8px;object-fit:cover;flex-shrink:0;background:var(--blush);}
+    .sug-photo-placeholder{width:72px;height:72px;border-radius:8px;flex-shrink:0;background:var(--blush);display:flex;align-items:center;justify-content:center;font-size:1.8rem;}
+    .sug-info{flex:1;}
+    .sug-outfit-name{font-family:'Playfair Display',serif;font-style:italic;font-size:1rem;font-weight:600;color:var(--text);margin-bottom:3px;}
+    .sug-outfit-meta{font-family:'Caveat',cursive;font-size:.78rem;color:var(--soft);}
+    .sug-wear-btn{background:var(--rose);border:none;border-radius:8px;color:#fff;font-family:'Caveat',cursive;font-size:.78rem;font-weight:700;padding:7px 12px;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+    .no-sug{font-family:'Caveat',cursive;font-size:.9rem;color:var(--soft);font-style:italic;text-align:center;padding:8px 0;}
+
+    /* ── Outfit grid ── */
+    .outfit-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:0 16px;}
+    .outfit-card{
+      background:var(--cream);border:1px solid var(--border);border-radius:12px;
+      overflow:hidden;cursor:pointer;
+      transition:transform .18s,box-shadow .18s;
+      animation:fadeUp .25s ease both;
+      position:relative;
+    }
+    .outfit-card:active{transform:scale(.97);}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+    .outfit-photo{width:100%;aspect-ratio:.75;object-fit:cover;background:var(--blush);}
+    .outfit-photo-placeholder{width:100%;aspect-ratio:.75;background:linear-gradient(135deg,var(--blush),var(--blush2));display:flex;align-items:center;justify-content:center;font-size:3rem;}
+    .outfit-info{padding:8px 10px 10px;}
+    .outfit-name{font-family:'Playfair Display',serif;font-style:italic;font-size:.88rem;font-weight:600;color:var(--text);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .outfit-meta{font-family:'Caveat',cursive;font-size:.72rem;color:var(--soft);display:flex;flex-wrap:wrap;gap:4px;align-items:center;}
+    .vibe-tag{display:inline-block;padding:2px 8px;border-radius:99px;font-family:'Caveat',cursive;font-size:.68rem;font-weight:700;background:var(--blush);color:var(--rose-dk);border:1px solid var(--blush2);}
+    .stars-row{display:flex;gap:1px;margin-top:4px;}
+    .star{font-size:.72rem;}
+    .last-worn{font-size:.65rem;color:var(--softer);font-style:italic;margin-top:2px;}
+    .worn-badge{position:absolute;top:7px;right:7px;background:rgba(200,100,100,0.85);color:#fff;font-family:'Caveat',cursive;font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:99px;}
+
+    /* ── Filter chips ── */
+    .filter-row{display:flex;gap:6px;overflow-x:auto;padding:8px 16px;scrollbar-width:none;border-bottom:1px solid var(--border);}
+    .filter-row::-webkit-scrollbar{display:none;}
+    .fchip{flex-shrink:0;padding:5px 13px;border-radius:99px;border:1px solid var(--border);background:transparent;font-family:'Caveat',cursive;font-size:.82rem;color:var(--soft);cursor:pointer;transition:all .14s;white-space:nowrap;}
+    .fchip.on{background:var(--rose);border-color:var(--rose);color:#fff;}
+
+    /* ── Weekly planner ── */
+    .week-wrap{padding:0 16px;}
+    .week-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+    .week-nav-btn{background:none;border:1px solid var(--border);border-radius:8px;color:var(--soft);font-size:1rem;width:34px;height:34px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .18s;}
+    .week-nav-btn:hover{border-color:var(--rose);color:var(--rose);}
+    .week-label{font-family:'Caveat',cursive;font-size:1rem;font-weight:700;color:var(--text);}
+    .day-row{display:flex;align-items:center;gap:10px;background:var(--cream);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px;cursor:pointer;transition:all .16s;}
+    .day-row:hover{border-color:var(--rose-lt);}
+    .day-row.today{border-color:var(--rose);background:linear-gradient(135deg,#fff5f2,var(--cream));}
+    .day-name{font-family:'Caveat',cursive;font-size:.88rem;font-weight:700;color:var(--text);width:34px;flex-shrink:0;}
+    .day-date{font-family:'Caveat',cursive;font-size:.72rem;color:var(--soft);width:28px;flex-shrink:0;}
+    .day-outfit{flex:1;display:flex;align-items:center;gap:8px;}
+    .day-outfit-img{width:42px;height:42px;border-radius:6px;object-fit:cover;background:var(--blush);flex-shrink:0;}
+    .day-outfit-placeholder{width:42px;height:42px;border-radius:6px;background:var(--blush);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.2rem;}
+    .day-outfit-name{font-family:'Lora',serif;font-size:.82rem;font-style:italic;color:var(--text);}
+    .day-empty{font-family:'Caveat',cursive;font-size:.82rem;color:var(--softer);font-style:italic;}
+    .day-clear{background:none;border:none;color:var(--rose-lt);font-size:.7rem;cursor:pointer;padding:4px;opacity:.6;flex-shrink:0;}
+
+    /* ── Calendar ── */
+    .cal-wrap{padding:0 16px;}
+    .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+    .cal-nav{background:none;border:1px solid var(--border);border-radius:8px;color:var(--soft);font-size:1rem;width:34px;height:34px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+    .cal-month{font-family:'Playfair Display',serif;font-style:italic;font-size:1.1rem;color:var(--text);}
+    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
+    .cal-dow{font-family:'Caveat',cursive;font-size:.65rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--softer);text-align:center;padding:4px 0;}
+    .cal-day{aspect-ratio:1;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Caveat',cursive;font-size:.8rem;cursor:pointer;position:relative;transition:all .14s;border:1px solid transparent;}
+    .cal-day:hover{background:var(--blush);border-color:var(--border);}
+    .cal-day.today{background:var(--rose);color:#fff;font-weight:700;}
+    .cal-day.has-outfit{background:var(--blush);border-color:var(--blush2);}
+    .cal-day.has-outfit.today{background:var(--rose);}
+    .cal-dot{width:5px;height:5px;border-radius:50%;background:var(--rose);position:absolute;bottom:3px;}
+    .cal-day.today .cal-dot{background:#fff;}
+    .cal-day.empty{cursor:default;}
+
+    /* ── Overlays ── */
+    .overlay{position:fixed;inset:0;z-index:100;background:rgba(58,20,20,0.45);display:flex;align-items:flex-end;opacity:0;pointer-events:none;transition:opacity .26s;}
+    .overlay.open{opacity:1;pointer-events:all;}
+    .sheet{width:100%;max-height:92dvh;overflow-y:auto;background:var(--cream);border-top:2px solid var(--rose-lt);border-radius:22px 22px 0 0;padding:14px 20px max(env(safe-area-inset-bottom,28px),28px);transform:translateY(100%);transition:transform .34s cubic-bezier(.32,.72,0,1);border-left:1px solid var(--border);border-right:1px solid var(--border);}
+    .overlay.open .sheet{transform:translateY(0);}
+    .handle{width:36px;height:3px;background:var(--blush2);margin:0 auto 18px;border-radius:99px;}
+    .sheet-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+    .sheet-title{font-family:'Playfair Display',serif;font-style:italic;font-size:1.8rem;color:var(--rose-dk);}
+    .sheet-close{background:var(--blush);border:1px solid var(--border);border-radius:8px;color:var(--soft);font-size:.85rem;font-weight:700;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .18s;}
+    .sheet-close:hover{background:var(--blush2);color:var(--rose-dk);}
+    .sheet-divider{height:1px;background:var(--border);margin:10px 0 16px;}
+    .field{margin-bottom:14px;}
+    .field>label{display:block;font-family:'Caveat',cursive;font-size:.82rem;font-weight:700;letter-spacing:1px;color:var(--soft);margin-bottom:8px;}
+    .inp{width:100%;background:#fff;border:1px solid var(--border);border-radius:8px;padding:11px 14px;font-family:'Lora',serif;font-size:.95rem;color:var(--text);outline:none;-webkit-appearance:none;transition:border-color .2s;}
+    .inp:focus{border-color:var(--rose);}
+    .inp::placeholder{color:var(--softer);font-style:italic;}
+    textarea.inp{resize:vertical;min-height:70px;line-height:1.6;}
+    .two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+    .star-picker{display:flex;gap:8px;}
+    .star-pick{font-size:1.8rem;cursor:pointer;color:rgba(58,32,32,0.1);transition:all .12s;}
+    .star-pick.lit{color:var(--gold);}
+    .vibe-row{display:flex;flex-wrap:wrap;gap:6px;}
+    .vibe-btn{padding:6px 13px;border-radius:99px;border:1px solid var(--border);background:transparent;font-family:'Caveat',cursive;font-size:.82rem;color:var(--soft);cursor:pointer;transition:all .14s;white-space:nowrap;}
+    .vibe-btn.on{background:var(--rose);border-color:var(--rose);color:#fff;}
+    .photo-upload-btn{width:100%;padding:12px;background:transparent;border:1px dashed var(--blush2);border-radius:8px;font-family:'Caveat',cursive;font-size:.9rem;color:var(--soft);cursor:pointer;transition:all .18s;text-align:center;}
+    .photo-upload-btn:hover{border-color:var(--rose);color:var(--rose);}
+    .photo-preview{width:100%;max-height:200px;border-radius:10px;object-fit:cover;margin-bottom:8px;border:1px solid var(--border);}
+    .photos-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px;}
+    .photo-thumb{position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;border:1px solid var(--border);}
+    .photo-thumb img{width:100%;height:100%;object-fit:cover;}
+    .photo-thumb-del{position:absolute;top:3px;right:3px;background:rgba(200,80,80,0.85);border:none;border-radius:99px;color:#fff;font-size:.6rem;width:18px;height:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+    .photo-thumb-main{position:absolute;bottom:3px;left:3px;background:rgba(200,150,90,0.85);border-radius:99px;font-family:'Caveat',cursive;font-size:.58rem;color:#fff;padding:1px 5px;}
+    .gallery-scroll{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin-bottom:14px;}
+    .gallery-scroll::-webkit-scrollbar{display:none;}
+    .gallery-img{flex-shrink:0;height:220px;border-radius:12px;object-fit:cover;border:1px solid var(--border);}
+    .gallery-img:first-child{width:100%;}
+    .gallery-img:not(:first-child){width:140px;}
+    .btn-primary{width:100%;padding:13px;background:linear-gradient(135deg,var(--rose),var(--rose-dk));border:none;border-radius:10px;font-family:'Caveat',cursive;font-size:1rem;font-weight:700;color:#fff;cursor:pointer;box-shadow:0 3px 12px rgba(200,100,100,0.25);transition:all .2s;margin-top:4px;}
+    .btn-primary:active{transform:scale(.97);}
+    .btn-danger{padding:12px 16px;background:transparent;border:1px solid rgba(200,100,100,0.3);border-radius:10px;font-family:'Lora',serif;font-size:.88rem;color:var(--rose);cursor:pointer;}
+    .btn-row{display:flex;gap:10px;margin-top:6px;}
+    .btn-ghost{background:transparent;border:1px solid var(--border);border-radius:8px;font-family:'Lora',serif;font-size:.82rem;color:var(--soft);padding:9px 16px;cursor:pointer;transition:all .2s;}
+    .btn-ghost:hover{border-color:var(--rose);color:var(--rose);}
+
+    /* Outfit picker in planner */
+    .outfit-pick-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-height:300px;overflow-y:auto;}
+    .opg-item{border-radius:8px;overflow:hidden;cursor:pointer;border:2px solid transparent;transition:all .16s;}
+    .opg-item:hover{border-color:var(--rose-lt);}
+    .opg-item.sel{border-color:var(--rose);box-shadow:0 0 0 2px rgba(200,100,100,0.2);}
+    .opg-img{width:100%;aspect-ratio:.75;object-fit:cover;background:var(--blush);}
+    .opg-placeholder{width:100%;aspect-ratio:.75;background:var(--blush);display:flex;align-items:center;justify-content:center;font-size:1.6rem;}
+    .opg-name{font-family:'Caveat',cursive;font-size:.7rem;padding:4px 6px;text-align:center;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:var(--cream);}
+
+    .empty-state{text-align:center;padding:40px 20px;}
+    .empty-icon{font-size:3rem;margin-bottom:10px;}
+    .empty-msg{font-family:'Caveat',cursive;font-size:1rem;color:var(--soft);}
+    .empty-sub{font-size:.82rem;color:var(--softer);font-style:italic;margin-top:4px;}
+
+    /* FAB */
+    .fab{position:fixed;bottom:max(env(safe-area-inset-bottom,24px),28px);right:18px;z-index:50;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--rose),var(--rose-dk));border:2px solid rgba(255,255,255,0.3);color:#fff;font-size:1.4rem;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 18px rgba(200,100,100,0.4);transition:transform .18s;}
+    .fab:active{transform:scale(.92);}
+
+    .toast{position:fixed;bottom:max(env(safe-area-inset-bottom,20px),28px);left:50%;transform:translateX(-50%) translateY(14px);background:var(--rose-dk);border:1px solid var(--rose-lt);border-radius:10px;padding:11px 22px;font-family:'Caveat',cursive;font-size:.95rem;color:#fff;opacity:0;pointer-events:none;z-index:999;box-shadow:0 6px 20px rgba(200,100,100,0.3);transition:opacity .22s,transform .3s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  </style>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+<div class="app">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="app-eyebrow">✿ what are we wearing today ✿</div>
+    <div class="app-title">My Closet</div>
+    <div class="app-sub">outfit diary & planner</div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tab-bar">
+    <button class="tab-btn active" id="tabSugBtn"   onclick="setTab('sug')">✨ Suggest</button>
+    <button class="tab-btn"        id="tabAllBtn"   onclick="setTab('all')">👗 All Outfits</button>
+    <button class="tab-btn"        id="tabWeekBtn"  onclick="setTab('week')">📅 This Week</button>
+    <button class="tab-btn"        id="tabCalBtn"   onclick="setTab('cal')">🗓 History</button>
+  </div>
+
+  <!-- ── SUGGEST TAB ── -->
+  <div class="tab-panel active" id="panelSug">
+    <div class="section-lbl">✦ What to Wear</div>
+    <div class="suggestion-wrap">
+      <div class="suggestion-card">
+        <div class="sug-label">Pick a vibe for today</div>
+        <div class="sug-vibe-row" id="sugVibes"></div>
+        <div style="text-align:right;margin-bottom:10px">
+          <button onclick="openManageTags()" style="background:none;border:none;font-family:'Caveat',cursive;font-size:.78rem;color:var(--soft);cursor:pointer;text-decoration:underline">✦ Manage tags</button>
+        </div>
+        <button class="sug-btn" onclick="suggestOutfit()">✨ Suggest an Outfit</button>
+        <div class="sug-result" id="sugResult"></div>
+      </div>
+    </div>
+    <div class="section-lbl" style="margin-top:8px">✦ Recently Worn</div>
+    <div style="padding:0 16px 16px" id="recentWorn"></div>
+  </div>
+
+  <!-- ── ALL OUTFITS TAB ── -->
+  <div class="tab-panel" id="panelAll">
+    <div class="filter-row" id="filterRow"></div>
+    <div class="section-lbl" id="outfitCountLbl">✦ All Outfits</div>
+    <div class="outfit-grid" id="outfitGrid"></div>
+    <div class="empty-state" id="outfitEmpty" style="display:none">
+      <div class="empty-icon">👗</div>
+      <div class="empty-msg">No outfits yet!</div>
+      <div class="empty-sub">Tap + to add your first look</div>
+    </div>
+  </div>
+
+  <!-- ── WEEK TAB ── -->
+  <div class="tab-panel" id="panelWeek">
+    <div class="section-lbl">✦ This Week</div>
+    <div class="week-wrap" id="weekWrap"></div>
+  </div>
+
+  <!-- ── CALENDAR TAB ── -->
+  <div class="tab-panel" id="panelCal">
+    <div class="section-lbl">✦ Outfit History</div>
+    <div class="cal-wrap">
+      <div class="cal-header">
+        <button class="cal-nav" onclick="changeCalMonth(-1)">‹</button>
+        <div class="cal-month" id="calMonthLabel"></div>
+        <button class="cal-nav" onclick="changeCalMonth(1)">›</button>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+    </div>
+    <div style="padding:0 16px;margin-top:14px" id="calDayDetail"></div>
+  </div>
+
+</div>
+
+<button class="fab" onclick="openAddOutfit()">+</button>
+
+<!-- Add/Edit Outfit -->
+<div class="overlay" id="addOv" onclick="closeSheet('addOv')">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="handle"></div>
+    <div id="addContent"></div>
+  </div>
+</div>
+
+<!-- Pick outfit for day -->
+<div class="overlay" id="pickOv" onclick="closeSheet('pickOv')">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="handle"></div>
+    <div id="pickContent"></div>
+  </div>
+</div>
+
+<!-- Manage Tags -->
+<div class="overlay" id="tagsOv" onclick="closeSheet('tagsOv')">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="handle"></div>
+    <div id="tagsContent"></div>
+  </div>
+</div>
+
+<!-- View outfit detail -->
+<div class="overlay" id="detailOv" onclick="closeSheet('detailOv')">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="handle"></div>
+    <div id="detailContent"></div>
+  </div>
+</div>
+
+<script>
+
+  const DEFAULT_VIBES=['Casual','Cozy','Dressy','Grunge','Streetwear','Cottagecore','Gym','Going Out','Work','Date Night'];
+  const VIBE_COLORS={Casual:'#c8965a',Cozy:'#c97a7a',Dressy:'#a070b0',Grunge:'#707070',Streetwear:'#507090',Cottagecore:'#70a070','Going Out':'#c06080',Work:'#6080a0','Date Night':'#b06090',Gym:'#c08040'};
+  const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const MONTHS_S=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  let D={outfits:[],wornLog:{},weekPlan:{},customVibes:[]};
+  let curFilter='All';
+  let curSugVibe='Casual';
+  let calYear, calMonth;
+  let pickingForDate=null;
+  let selectedPickId=null;
+  let OF={id:null,name:'',vibes:[],rating:0,notes:'',photos:[]};
+
+  function allVibes(){return DEFAULT_VIBES.concat(D.customVibes||[]);}
+  function save(){try{localStorage.setItem('mycloset1',JSON.stringify(D));}catch(e){}}
+  function load(){try{var s=localStorage.getItem('mycloset1');if(s)D=JSON.parse(s);}catch(e){}}
+  function coverPhoto(o){return (o.photos&&o.photos.length)?o.photos[0]:(o.photo||'');}
+  function todayStr(){var d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+  function pad(n){return String(n).padStart(2,'0');}
+  function fmtDate(ds){if(!ds)return '';var p=ds.split('-');return MONTHS_S[+p[1]-1]+' '+(+p[2]);}
+  function daysSince(ds){if(!ds)return 999;var today=new Date();today.setHours(0,0,0,0);var past=new Date(ds+'T12:00:00');return Math.floor((today-past)/86400000);}
+  function stars(n,t){t=t||5;var s='';for(var i=0;i<t;i++)s+='<span style="color:'+(i<n?'var(--gold)':'rgba(58,32,32,0.1)')+'">&#9733;</span>';return s;}
+  function vibeTag(v){var col=VIBE_COLORS[v]||'';var bg=col?col+'20':'var(--blush)';var bc=col?col+'40':'var(--blush2)';var tc=col||'var(--rose-dk)';return '<span class="vibe-tag" style="background:'+bg+';border-color:'+bc+';color:'+tc+'">'+v+'</span>';}
+  function photoOrPlaceholder(o,w,h,r){var cp=coverPhoto(o);if(cp)return '<img style="width:'+w+';height:'+h+';border-radius:'+r+';object-fit:cover" src="'+cp+'"/>';return '<div style="width:'+w+';height:'+h+';border-radius:'+r+';background:var(--blush);display:flex;align-items:center;justify-content:center;font-size:1.4rem">&#128247;</div>';}
+
+  // ── Tabs ─────────────────────────────────────────────────────
+  function setTab(tab){
+    ['sug','all','week','cal'].forEach(function(t){
+      var p=document.getElementById('panel'+t.charAt(0).toUpperCase()+t.slice(1));
+      var b=document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1)+'Btn');
+      if(p)p.classList.toggle('active',t===tab);
+      if(b)b.classList.toggle('active',t===tab);
+    });
+    if(tab==='all')renderAll();
+    if(tab==='week')renderWeek();
+    if(tab==='cal')renderCal();
+    if(tab==='sug'){renderSugVibes();renderRecent();}
+  }
+
+  // ── Suggest ───────────────────────────────────────────────────
+  function renderSugVibes(){
+    var vibes=allVibes();
+    var html='';
+    for(var i=0;i<vibes.length;i++){
+      var v=vibes[i];
+      var isOn=curSugVibe===v;
+      var col=VIBE_COLORS[v]||'var(--rose)';
+      var style=isOn?'background:'+col+';border-color:'+col+';color:#fff':'';
+      html+='<button class="sug-vibe'+(isOn?' on':'')+'" onclick="curSugVibe=\''+v+'\';renderSugVibes()" style="'+style+'">'+v+'</button>';
+    }
+    document.getElementById('sugVibes').innerHTML=html;
+  }
+
+  function suggestOutfit(){
+    var result=document.getElementById('sugResult');
+    result.classList.add('show');
+    var pool=D.outfits.filter(function(o){return !o.vibes||o.vibes.length===0||o.vibes.indexOf(curSugVibe)>-1;});
+    if(!pool.length){result.innerHTML='<div class="no-sug">No outfits tagged as <b>'+curSugVibe+'</b> yet!<br>Add some outfits first.</div>';return;}
+    var sorted=pool.slice().sort(function(a,b){return daysSince(getLastWorn(a.id))-daysSince(getLastWorn(b.id));});
+    var pick=sorted[sorted.length-1];
+    var lastWorn=getLastWorn(pick.id);
+    var ago=lastWorn?(daysSince(lastWorn)+' days ago'):'Never worn';
+    var cp=coverPhoto(pick);
+    var img=cp?'<img class="sug-photo" src="'+cp+'" alt="'+pick.name+'"/>'
+             :'<div class="sug-photo-placeholder">&#128247;</div>';
+    result.innerHTML='<div class="sug-outfit">'+img
+      +'<div class="sug-info">'
+      +'<div class="sug-outfit-name">'+pick.name+'</div>'
+      +'<div class="sug-outfit-meta">Last worn: '+ago+'</div>'
+      +'<div class="sug-outfit-meta">'+(pick.vibes?pick.vibes.join(', '):'')+'</div>'
+      +'</div>'
+      +'<button class="sug-wear-btn" onclick="wearToday(\''+pick.id+'\')">Wear today</button>'
+      +'</div>'
+      +'<div style="text-align:center;margin-top:8px"><button style="background:none;border:none;font-family:\'Caveat\',cursive;font-size:.82rem;color:var(--soft);cursor:pointer;text-decoration:underline" onclick="suggestOutfit()">&#10022; Suggest another</button></div>';
+  }
+
+  function wearToday(id){
+    var today=todayStr();
+    if(!D.wornLog[today])D.wornLog[today]=[];
+    if(D.wornLog[today].indexOf(id)===-1)D.wornLog[today].push(id);
+    D.weekPlan[today]=id;
+    save();toast('Outfit logged for today ');renderSugVibes();renderRecent();
+  }
+
+  function getLastWorn(id){
+    var dates=Object.keys(D.wornLog).filter(function(d){return D.wornLog[d]&&D.wornLog[d].indexOf(id)>-1;}).sort().reverse();
+    return dates[0]||null;
+  }
+
+  function renderRecent(){
+    var el=document.getElementById('recentWorn');
+    var today=todayStr();
+    var last7=[];
+    for(var i=0;i<7;i++){
+      var d=new Date();d.setDate(d.getDate()-i);
+      var ds=d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+      if(D.wornLog[ds]&&D.wornLog[ds].length){
+        for(var j=0;j<D.wornLog[ds].length;j++){
+          var o=D.outfits.find(function(x){return x.id===D.wornLog[ds][j];});
+          if(o)last7.push({outfit:o,date:ds});
+        }
+      }
+    }
+    if(!last7.length){el.innerHTML='<div style="font-family:\'Caveat\',cursive;font-size:.88rem;color:var(--softer);font-style:italic;text-align:center;padding:8px">Nothing logged this week yet.</div>';return;}
+    var html='<div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none">';
+    for(var k=0;k<last7.length;k++){
+      var item=last7[k];var cp=coverPhoto(item.outfit);
+      var label=item.date===today?'Today':fmtDate(item.date);
+      html+='<div style="flex-shrink:0;width:80px;cursor:pointer" onclick="openDetail(\''+item.outfit.id+'\')">';
+      html+=cp?'<img style="width:80px;height:100px;border-radius:8px;object-fit:cover;border:1px solid var(--border)" src="'+cp+'"/>'
+              :'<div style="width:80px;height:100px;border-radius:8px;background:var(--blush);display:flex;align-items:center;justify-content:center;font-size:2rem">&#128247;</div>';
+      html+='<div style="font-family:\'Caveat\',cursive;font-size:.7rem;color:var(--soft);text-align:center;margin-top:4px">'+label+'</div></div>';
+    }
+    html+='</div>';
+    el.innerHTML=html;
+  }
+
+  // ── All outfits ───────────────────────────────────────────────
+  function renderAll(){
+    var filters=['All'].concat(allVibes());
+    var html='';
+    for(var i=0;i<filters.length;i++){
+      var v=filters[i];
+      html+='<button class="fchip'+(curFilter===v?' on':'')+'" onclick="curFilter=\''+v+'\';renderAll()">'+v+'</button>';
+    }
+    document.getElementById('filterRow').innerHTML=html;
+
+    var list=D.outfits.slice();
+    if(curFilter!=='All')list=list.filter(function(o){return o.vibes&&o.vibes.indexOf(curFilter)>-1;});
+    list.sort(function(a,b){return daysSince(getLastWorn(a.id))-daysSince(getLastWorn(b.id));});
+
+    var grid=document.getElementById('outfitGrid');
+    var empty=document.getElementById('outfitEmpty');
+    document.getElementById('outfitCountLbl').textContent='✦ '+list.length+' Outfit'+(list.length!==1?'s':'');
+    if(!list.length){grid.innerHTML='';empty.style.display='block';return;}
+    empty.style.display='none';
+
+    var gh='';
+    for(var j=0;j<list.length;j++){
+      var o=list[j];var cp=coverPhoto(o);
+      var lastWorn=getLastWorn(o.id);
+      var ago=lastWorn?(daysSince(lastWorn)+'d ago'):'Never worn';
+      var todayBadge=(lastWorn&&daysSince(lastWorn)===0)?'<div class="worn-badge">Today</div>':'';
+      var photoEl=cp?'<img class="outfit-photo" src="'+cp+'" alt="'+o.name+'"/>'
+                    :'<div class="outfit-photo-placeholder">&#128247;</div>';
+      var vibesHtml='';
+      if(o.vibes)for(var vi=0;vi<Math.min(o.vibes.length,2);vi++)vibesHtml+=vibeTag(o.vibes[vi]);
+      var starsHtml=o.rating?'<div class="stars-row">'+stars(o.rating)+'</div>':'';
+      gh+='<div class="outfit-card" onclick="openDetail(\''+o.id+'\')" style="animation-delay:'+(j*25)+'ms">'
+        +todayBadge+photoEl
+        +'<div class="outfit-info">'
+        +'<div class="outfit-name">'+o.name+'</div>'
+        +'<div class="outfit-meta">'+vibesHtml+'</div>'
+        +starsHtml
+        +'<div class="last-worn">'+ago+'</div>'
+        +'</div></div>';
+    }
+    grid.innerHTML=gh;
+  }
+
+  // ── Detail ────────────────────────────────────────────────────
+  function openDetail(id){
+    var o=D.outfits.find(function(x){return x.id===id;});if(!o)return;
+    var lastWorn=getLastWorn(id);
+    var wornDates=Object.keys(D.wornLog).filter(function(d){return D.wornLog[d]&&D.wornLog[d].indexOf(id)>-1;}).sort().reverse();
+    var photos=o.photos&&o.photos.length?o.photos:(o.photo?[o.photo]:[]);
+    var photoHtml='';
+    if(photos.length===1){
+      photoHtml='<img style="width:100%;max-height:280px;border-radius:12px;object-fit:cover;margin-bottom:14px;border:1px solid var(--border)" src="'+photos[0]+'"/>';
+    } else if(photos.length>1){
+      photoHtml='<div class="gallery-scroll">';
+      for(var i=0;i<photos.length;i++)photoHtml+='<img class="gallery-img" src="'+photos[i]+'"/>';
+      photoHtml+='</div>';
+    }
+    var vibesHtml='';
+    if(o.vibes)for(var vi=0;vi<o.vibes.length;vi++)vibesHtml+=vibeTag(o.vibes[vi]);
+    var starsHtml=o.rating?'<div style="display:flex;gap:2px;justify-content:center">'+stars(o.rating)+'</div>':'';
+    var notesHtml=o.notes?'<div style="font-size:.88rem;color:var(--soft);font-style:italic;margin-bottom:14px;line-height:1.6">'+o.notes+'</div>':'';
+    var histHtml='';
+    if(wornDates.length){
+      histHtml='<div style="font-family:\'Caveat\',cursive;font-size:.8rem;font-weight:700;letter-spacing:1px;color:var(--soft);margin:14px 0 8px">Worn on</div>';
+      for(var wi=0;wi<Math.min(wornDates.length,5);wi++)
+        histHtml+='<div style="font-family:\'Lora\',serif;font-style:italic;font-size:.85rem;color:var(--soft);padding:5px 0;border-bottom:1px dashed var(--border)">'+fmtDate(wornDates[wi])+'</div>';
+    }
+    document.getElementById('detailContent').innerHTML=
+      '<div class="sheet-hd">'
+      +'<button class="btn-ghost" style="padding:7px 12px;font-size:.8rem" onclick="closeSheet(\'detailOv\');openAddOutfit(\''+id+'\')">Edit</button>'
+      +'<button class="sheet-close" onclick="closeSheet(\'detailOv\')">&#10005;</button>'
+      +'</div>'
+      +photoHtml
+      +'<div style="text-align:center;margin-bottom:14px">'
+      +'<div style="font-family:\'Playfair Display\',serif;font-style:italic;font-size:1.6rem;font-weight:700;color:var(--rose-dk);margin-bottom:8px">'+o.name+'</div>'
+      +'<div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:8px">'+vibesHtml+'</div>'
+      +starsHtml+'</div>'
+      +notesHtml
+      +'<div style="display:flex;gap:10px;margin-bottom:14px">'
+      +'<div style="flex:1;background:var(--blush);border-radius:8px;padding:10px;text-align:center">'
+      +'<div style="font-family:\'Caveat\',cursive;font-size:.72rem;color:var(--soft);margin-bottom:3px">Times worn</div>'
+      +'<div style="font-family:\'Playfair Display\',serif;font-size:1.3rem;font-style:italic;color:var(--rose-dk)">'+wornDates.length+'</div></div>'
+      +'<div style="flex:1;background:var(--blush);border-radius:8px;padding:10px;text-align:center">'
+      +'<div style="font-family:\'Caveat\',cursive;font-size:.72rem;color:var(--soft);margin-bottom:3px">Last worn</div>'
+      +'<div style="font-family:\'Playfair Display\',serif;font-size:1.1rem;font-style:italic;color:var(--rose-dk)">'+(lastWorn?fmtDate(lastWorn):'Never')+'</div></div></div>'
+      +'<button class="btn-primary" onclick="wearToday(\''+id+'\');closeSheet(\'detailOv\')">Wearing this today</button>'
+      +histHtml;
+    openSheet('detailOv');
+  }
+
+  // ── Add/Edit outfit ───────────────────────────────────────────
+  function openAddOutfit(editId){
+    if(editId&&editId!=='undefined'){
+      var o=D.outfits.find(function(x){return x.id===editId;});
+      if(o){OF=JSON.parse(JSON.stringify(o));if(!OF.photos)OF.photos=OF.photo?[OF.photo]:[];}
+    } else {
+      OF={id:null,name:'',vibes:[],rating:0,notes:'',photos:[]};
+    }
+    renderOutfitForm();openSheet('addOv');
+    setTimeout(function(){var el=document.getElementById('outfitNameInp');if(el)el.focus();},360);
+  }
+
+  function renderOutfitForm(){
+    var vibes=allVibes();
+    var thumbsHtml='';
+    for(var i=0;i<(OF.photos||[]).length;i++){
+      thumbsHtml+='<div class="photo-thumb">'
+        +'<img src="'+OF.photos[i]+'" alt="photo"/>'
+        +(i===0?'<div class="photo-thumb-main">Cover</div>':'')
+        +'<button class="photo-thumb-del" onclick="removePhoto('+i+')">&#10005;</button>'
+        +'</div>';
+    }
+    var vibesHtml='';
+    for(var vi=0;vi<vibes.length;vi++){
+      var v=vibes[vi];var isOn=OF.vibes&&OF.vibes.indexOf(v)>-1;
+      var col=VIBE_COLORS[v]||'var(--rose)';
+      var style=isOn?'background:'+col+';border-color:'+col+';color:#fff':'';
+      vibesHtml+='<button class="vibe-btn'+(isOn?' on':'')+'" onclick="toggleVibe(\''+v+'\')" style="'+style+'">'+v+'</button>';
+    }
+    var starsHtml='';
+    for(var si=1;si<=5;si++)
+      starsHtml+='<span class="star-pick'+(si<=OF.rating?' lit':'')+'" onclick="OF.rating=OF.rating==='+si+'?0:'+si+';renderOutfitForm()">&#9733;</span>';
+
+    document.getElementById('addContent').innerHTML=
+      '<div class="sheet-hd">'
+      +'<div class="sheet-title">'+(OF.id?'Edit Outfit':'Add Outfit')+'</div>'
+      +'<button class="sheet-close" onclick="closeSheet(\'addOv\')">&#10005;</button>'
+      +'</div>'
+      +'<div class="sheet-divider"></div>'
+      +'<div class="field"><label>Photos (first = cover)</label>'
+      +'<div class="photos-grid">'+thumbsHtml+'</div>'
+      +'<label class="photo-upload-btn" for="photoInp">+ Add photo</label>'
+      +'<input type="file" id="photoInp" accept="image/*" style="display:none" onchange="handlePhoto(this)"/>'
+      +'</div>'
+      +'<div class="field"><label>Outfit Name</label>'
+      +'<input class="inp" id="outfitNameInp" type="text" value="'+OF.name+'" placeholder="e.g. Sunday Brunch Look..." maxlength="60" oninput="OF.name=this.value"/>'
+      +'</div>'
+      +'<div class="field"><label>Vibes (pick all that fit)</label>'
+      +'<div class="vibe-row">'+vibesHtml+'</div></div>'
+      +'<div class="field"><label>Rating</label>'
+      +'<div class="star-picker">'+starsHtml+'</div></div>'
+      +'<div class="field"><label>Notes</label>'
+      +'<textarea class="inp" placeholder="Where you wore it, what you loved..." oninput="OF.notes=this.value">'+OF.notes+'</textarea></div>'
+      +'<div class="btn-row">'
+      +(OF.id?'<button class="btn-danger" onclick="deleteOutfit(\''+OF.id+'\')">Delete</button>':'')
+      +'<button class="btn-primary" onclick="saveOutfit()">'+(OF.id?'Save Changes':'Add to Closet')+'</button>'
+      +'</div>';
+  }
+
+  function toggleVibe(v){
+    if(!OF.vibes)OF.vibes=[];
+    var idx=OF.vibes.indexOf(v);
+    if(idx>-1)OF.vibes.splice(idx,1);else OF.vibes.push(v);
+    renderOutfitForm();
+  }
+
+  function handlePhoto(input){
+    var file=input.files[0];if(!file)return;
+    var reader=new FileReader();
+    reader.onload=function(e){
+      var img=new Image();
+      img.onload=function(){
+        var canvas=document.createElement('canvas');
+        var max=500;var w=img.width;var h=img.height;
+        if(w>h){if(w>max){h=Math.round(h*max/w);w=max;}}else{if(h>max){w=Math.round(w*max/h);h=max;}}
+        canvas.width=w;canvas.height=h;
+        canvas.getContext('2d').drawImage(img,0,0,w,h);
+        if(!OF.photos)OF.photos=[];
+        OF.photos.push(canvas.toDataURL('image/jpeg',0.78));
+        renderOutfitForm();
+      };
+      img.src=e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function removePhoto(idx){OF.photos.splice(idx,1);renderOutfitForm();}
+
+  function saveOutfit(){
+    var nameEl=document.getElementById('outfitNameInp');
+    var name=(nameEl?nameEl.value:OF.name).trim();
+    if(!name){toast('Give your outfit a name');return;}
+    OF.name=name;
+    if(!OF.photos)OF.photos=[];
+    if(OF.id){
+      var i=D.outfits.findIndex(function(o){return o.id===OF.id;});
+      if(i>-1)D.outfits[i]=JSON.parse(JSON.stringify(OF));
+      toast('Outfit saved!');
+    } else {
+      OF.id='o'+Date.now();
+      D.outfits.push(JSON.parse(JSON.stringify(OF)));
+      toast('Added to your closet!');
+    }
+    save();closeSheet('addOv');renderAll();renderSugVibes();renderRecent();
+  }
+
+  function deleteOutfit(id){
+    D.outfits=D.outfits.filter(function(o){return o.id!==id;});
+    Object.keys(D.wornLog).forEach(function(d){D.wornLog[d]=(D.wornLog[d]||[]).filter(function(x){return x!==id;});});
+    Object.keys(D.weekPlan).forEach(function(d){if(D.weekPlan[d]===id)delete D.weekPlan[d];});
+    save();closeSheet('addOv');closeSheet('detailOv');renderAll();toast('Outfit removed');
+  }
+
+  // ── Weekly planner ────────────────────────────────────────────
+  function renderWeek(){
+    var today=new Date();today.setHours(0,0,0,0);
+    var dow=today.getDay();
+    var monday=new Date(today);monday.setDate(today.getDate()-(dow===0?6:dow-1));
+    var html='';
+    for(var i=0;i<7;i++){
+      var d=new Date(monday);d.setDate(monday.getDate()+i);
+      var ds=d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+      var isToday=ds===todayStr();
+      var plannedId=D.weekPlan[ds];
+      var outfit=plannedId?D.outfits.find(function(o){return o.id===plannedId;}):null;
+      var cp=outfit?coverPhoto(outfit):'';
+      var imgEl=outfit?(cp?'<img class="day-outfit-img" src="'+cp+'" alt="'+outfit.name+'"/>'
+        :'<div class="day-outfit-placeholder">&#128247;</div>')
+        :'<div class="day-outfit-placeholder" style="background:transparent;border:1px dashed var(--border)">+</div>';
+      var nameEl=outfit?'<div class="day-outfit-name">'+outfit.name+'</div>'
+        :'<div class="day-empty">Tap to plan</div>';
+      var clearBtn=outfit?'<button class="day-clear" onclick="event.stopPropagation();clearDay(\''+ds+'\')">&#10005;</button>':'';
+      html+='<div class="day-row'+(isToday?' today':'')+'" onclick="openPickForDay(\''+ds+'\')">'
+        +'<div class="day-name">'+DAYS[d.getDay()]+'</div>'
+        +'<div class="day-date">'+d.getDate()+'</div>'
+        +'<div class="day-outfit">'+imgEl+nameEl+'</div>'
+        +clearBtn+'</div>';
+    }
+    document.getElementById('weekWrap').innerHTML=html;
+  }
+
+  function clearDay(ds){delete D.weekPlan[ds];save();renderWeek();}
+
+  function openPickForDay(ds){
+    pickingForDate=ds;selectedPickId=D.weekPlan[ds]||null;
+    var gridHtml='';
+    for(var i=0;i<D.outfits.length;i++){
+      var o=D.outfits[i];var cp=coverPhoto(o);
+      var sel=selectedPickId===o.id?' sel':'';
+      var imgEl=cp?'<img class="opg-img" src="'+cp+'"/>':'<div class="opg-placeholder">&#128247;</div>';
+      gridHtml+='<div class="opg-item'+sel+'" onclick="selectedPickId=\''+o.id+'\';document.querySelectorAll(\'.opg-item\').forEach(function(el){el.classList.remove(\'sel\');});this.classList.add(\'sel\')">'+imgEl+'<div class="opg-name">'+o.name+'</div></div>';
+    }
+    var bodyHtml=!D.outfits.length
+      ?'<div style="text-align:center;padding:20px;color:var(--softer);font-style:italic">No outfits yet!</div>'
+      :'<div class="outfit-pick-grid">'+gridHtml+'</div><button class="btn-primary" style="margin-top:14px" onclick="confirmPickDay()">Plan This Outfit</button>';
+    document.getElementById('pickContent').innerHTML=
+      '<div class="sheet-hd"><div class="sheet-title">Pick Outfit</div>'
+      +'<button class="sheet-close" onclick="closeSheet(\'pickOv\')">&#10005;</button></div>'
+      +'<div style="font-family:\'Caveat\',cursive;font-size:.88rem;color:var(--soft);margin-bottom:14px">For '+fmtDate(ds)+'</div>'
+      +'<div class="sheet-divider"></div>'+bodyHtml;
+    openSheet('pickOv');
+  }
+
+  function confirmPickDay(){
+    if(!selectedPickId||!pickingForDate)return;
+    D.weekPlan[pickingForDate]=selectedPickId;
+    if(pickingForDate===todayStr()){
+      if(!D.wornLog[pickingForDate])D.wornLog[pickingForDate]=[];
+      if(D.wornLog[pickingForDate].indexOf(selectedPickId)===-1)D.wornLog[pickingForDate].push(selectedPickId);
+    }
+    save();closeSheet('pickOv');renderWeek();toast('Outfit planned!');
+  }
+
+  // ── Calendar ──────────────────────────────────────────────────
+  function renderCal(){
+    var now=new Date();
+    if(calYear===undefined){calYear=now.getFullYear();calMonth=now.getMonth();}
+    document.getElementById('calMonthLabel').textContent=MONTHS[calMonth]+' '+calYear;
+    var firstDay=new Date(calYear,calMonth,1).getDay();
+    var daysInMonth=new Date(calYear,calMonth+1,0).getDate();
+    var todS=todayStr();
+    var html='';
+    for(var di=0;di<7;di++)html+='<div class="cal-dow">'+DAYS[di][0]+'</div>';
+    for(var ei=0;ei<firstDay;ei++)html+='<div class="cal-day empty"></div>';
+    for(var day=1;day<=daysInMonth;day++){
+      var ds=calYear+'-'+pad(calMonth+1)+'-'+pad(day);
+      var hasOutfit=D.wornLog[ds]&&D.wornLog[ds].length>0;
+      var cls='cal-day'+(ds===todS?' today':'')+(hasOutfit?' has-outfit':'');
+      var dot=(hasOutfit&&ds!==todS)?'<div class="cal-dot"></div>':'';
+      html+='<div class="'+cls+'" onclick="showCalDay(\''+ds+'\')">'+day+dot+'</div>';
+    }
+    document.getElementById('calGrid').innerHTML=html;
+  }
+
+  function showCalDay(ds){
+    var ids=D.wornLog[ds]||[];
+    var el=document.getElementById('calDayDetail');
+    if(!ids.length){el.innerHTML='';return;}
+    var html='<div style="font-family:\'Caveat\',cursive;font-size:.9rem;font-weight:700;color:var(--rose-dk);margin-bottom:10px">Worn on '+fmtDate(ds)+'</div>';
+    for(var i=0;i<ids.length;i++){
+      var o=D.outfits.find(function(x){return x.id===ids[i];});
+      if(!o)continue;
+      var cp=coverPhoto(o);
+      var img=cp?'<img style="width:52px;height:52px;border-radius:6px;object-fit:cover" src="'+cp+'"/>'
+               :'<div style="width:52px;height:52px;border-radius:6px;background:var(--blush);display:flex;align-items:center;justify-content:center;font-size:1.4rem">&#128247;</div>';
+      html+='<div style="display:flex;gap:10px;align-items:center;background:var(--cream);border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:8px;cursor:pointer" onclick="openDetail(\''+o.id+'\')">'
+        +img+'<div>'
+        +'<div style="font-family:\'Playfair Display\',serif;font-style:italic;font-size:.92rem;font-weight:600">'+o.name+'</div>'
+        +'<div style="font-family:\'Caveat\',cursive;font-size:.75rem;color:var(--soft)">'+(o.vibes?o.vibes.join(', '):'')+'</div>'
+        +'</div></div>';
+    }
+    el.innerHTML=html;
+  }
+
+  function changeCalMonth(dir){
+    calMonth+=dir;
+    if(calMonth>11){calMonth=0;calYear++;}
+    if(calMonth<0){calMonth=11;calYear--;}
+    renderCal();document.getElementById('calDayDetail').innerHTML='';
+  }
+
+  // ── Manage tags ───────────────────────────────────────────────
+  function openManageTags(){renderTagsSheet();openSheet('tagsOv');}
+
+  function renderTagsSheet(){
+    if(!D.customVibes)D.customVibes=[];
+    var defHtml='';
+    for(var i=0;i<DEFAULT_VIBES.length;i++)
+      defHtml+='<span style="padding:5px 13px;border-radius:99px;border:1px solid var(--border);font-family:\'Caveat\',cursive;font-size:.82rem;color:var(--soft)">'+DEFAULT_VIBES[i]+'</span>';
+    var custHtml='';
+    if(D.customVibes.length){
+      for(var j=0;j<D.customVibes.length;j++){
+        var v=D.customVibes[j];
+        custHtml+='<div style="display:flex;align-items:center;gap:4px;padding:5px 8px 5px 13px;border-radius:99px;border:1px solid var(--blush2);background:var(--blush);font-family:\'Caveat\',cursive;font-size:.82rem;color:var(--rose-dk)">'+v
+          +'<button onclick="deleteCustomTag(\''+v+'\')" style="background:rgba(200,80,80,0.2);border:none;border-radius:99px;color:var(--rose-dk);font-size:.6rem;width:16px;height:16px;display:flex;align-items:center;justify-content:center;cursor:pointer">&#10005;</button>'
+          +'</div>';
+      }
+    } else {
+      custHtml='<div style="font-family:\'Caveat\',cursive;font-size:.82rem;color:var(--softer);font-style:italic;padding:4px 0">No custom tags yet</div>';
+    }
+    document.getElementById('tagsContent').innerHTML=
+      '<div class="sheet-hd"><div class="sheet-title">Manage Tags</div>'
+      +'<button class="sheet-close" onclick="closeSheet(\'tagsOv\')">&#10005;</button></div>'
+      +'<div style="font-family:\'Caveat\',cursive;font-size:.82rem;color:var(--soft);font-style:italic;margin-bottom:14px">Built-in tags cannot be deleted. Your custom tags can.</div>'
+      +'<div style="font-family:\'Caveat\',cursive;font-size:.82rem;font-weight:700;letter-spacing:1px;color:var(--rose-dk);margin-bottom:8px">Default Tags</div>'
+      +'<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--border)">'+defHtml+'</div>'
+      +'<div style="font-family:\'Caveat\',cursive;font-size:.82rem;font-weight:700;letter-spacing:1px;color:var(--rose-dk);margin-bottom:8px">My Custom Tags</div>'
+      +'<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px">'+custHtml+'</div>'
+      +'<div style="display:flex;gap:8px">'
+      +'<input class="inp" id="newTagInp" type="text" placeholder="New tag name..." maxlength="30" style="flex:1" onkeydown="if(event.key===\'Enter\')addCustomTag()"/>'
+      +'<button class="btn-primary" style="width:auto;padding:11px 18px;font-size:.85rem;margin-top:0" onclick="addCustomTag()">+ Add</button>'
+      +'</div>';
+    setTimeout(function(){var el=document.getElementById('newTagInp');if(el)el.focus();},200);
+  }
+
+  function addCustomTag(){
+    var inp=document.getElementById('newTagInp');
+    var name=inp?inp.value.trim():'';
+    if(!name){toast('Enter a tag name');return;}
+    var existing=allVibes().map(function(v){return v.toLowerCase();});
+    if(existing.indexOf(name.toLowerCase())>-1){toast('Tag already exists!');return;}
+    if(!D.customVibes)D.customVibes=[];
+    D.customVibes.push(name);
+    save();renderTagsSheet();renderSugVibes();renderAll();
+    toast('"'+name+'" added!');
+  }
+
+  function deleteCustomTag(v){
+    D.customVibes=D.customVibes.filter(function(x){return x!==v;});
+    D.outfits.forEach(function(o){if(o.vibes)o.vibes=o.vibes.filter(function(x){return x!==v;});});
+    if(curSugVibe===v)curSugVibe=DEFAULT_VIBES[0];
+    if(curFilter===v)curFilter='All';
+    save();renderTagsSheet();renderSugVibes();renderAll();
+    toast('"'+v+'" removed');
+  }
+
+  // ── Sheets / Toast ────────────────────────────────────────────
+  function openSheet(id){document.getElementById(id).classList.add('open');document.body.style.overflow='hidden';}
+  function closeSheet(id){document.getElementById(id).classList.remove('open');document.body.style.overflow='';}
+
+  var _tt;
+  function toast(msg){var el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(_tt);_tt=setTimeout(function(){el.classList.remove('show');},2300);}
+
+  // ── Init ──────────────────────────────────────────────────────
+  load();renderSugVibes();renderRecent();
+
+  try{
+    var m={name:'My Closet',short_name:'My Closet',start_url:'./',display:'standalone',background_color:'#fdf6f0',theme_color:'#f9f0f0',
+      icons:[{src:"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjIyIiBmaWxsPSIjZjlmMGYwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI1MCIgcj0iMjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2M5N2E3YSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHRleHQgeD0iMzYiIHk9IjYyIiBmb250LXNpemU9IjM1Ij7wn5i4PC90ZXh0Pjwvc3ZnPg==",sizes:'192x192',type:'image/svg+xml'}]};
+    var b=new Blob([JSON.stringify(m)],{type:'application/manifest+json'});
+    document.head.appendChild(Object.assign(document.createElement('link'),{rel:'manifest',href:URL.createObjectURL(b)}));
+  }catch(e){}
+
+</script>
+</body>
+</html>
