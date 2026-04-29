@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="My Lists"/>
+  <meta name="theme-color" content="#0c0810"/>
+  <style>html{background:#0c0810}</style>
+  <title>My Anime & K-Drama List</title>
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@400;600;700&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg:        #0c0810;
+      --card:      #160c1c;
+      --card2:     #1e1028;
+      --border:    rgba(210,120,170,0.22);
+      --border-lt: rgba(230,160,200,0.4);
+      --pink:      #c8507a;
+      --pink-lt:   #e888b8;
+      --pink-dim:  rgba(200,80,122,0.15);
+      --gold:      #c48840;
+      --gold-lt:   #e0b060;
+      --teal:      #4888c8;
+      --teal-lt:   #a0d0f8;
+      --teal-dim:  rgba(72,136,200,0.15);
+      --text:      #f0dce8;
+      --soft:      rgba(240,220,235,0.52);
+      --softer:    rgba(240,220,235,0.28);
+      --sheet:     #100a18;
+
+      --s-watch:   #4a9fd4;
+      --s-done:    #58b870;
+      --s-plan:    #c89840;
+      --s-drop:    #c85858;
+
+      --accent:    var(--pink);
+      --accent-lt: var(--pink-lt);
+      --accent-dim:var(--pink-dim);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { background: #0c0810 !important; }
+    html, body { background: #0c0810 !important; min-height: 100dvh; }
+    .app { background: #0c0810; min-height: 100dvh; }
+
+    body { font-family: 'Nunito', sans-serif; color: var(--text); overflow-x: hidden; }
+
+    /* ── Petals ── */
+    .petal {
+      position: fixed; pointer-events: none; z-index: 5;
+      border-radius: 0 60% 0 60%; top: -12px;
+      animation: petalFall linear infinite;
+    }
+    @keyframes petalFall {
+      0%   { transform:translateY(0px)   rotate(0deg)   translateX(0px);   opacity:0; }
+      6%   { opacity:1; }
+      30%  { transform:translateY(30vh)  rotate(120deg) translateX(18px); }
+      60%  { transform:translateY(62vh)  rotate(240deg) translateX(-14px); }
+      92%  { opacity:1; }
+      100% { transform:translateY(105vh) rotate(400deg) translateX(10px);  opacity:0; }
+    }
+
+    /* ── K-Drama Snow ── */
+    .snowflake {
+      position: fixed; pointer-events: none; z-index: 5;
+      border-radius: 50%; top: -8px;
+      background: white;
+      box-shadow: 0 0 4px rgba(160,208,248,0.8);
+      animation: snowFall linear infinite;
+      display: none;
+    }
+    .snowflake.visible { display: block; }
+    @keyframes snowFall {
+      0%   { transform: translateY(0px)   translateX(0px)   rotate(0deg);   opacity: 0; }
+      8%   { opacity: 1; }
+      25%  { transform: translateY(22vh)  translateX(12px)  rotate(45deg); }
+      50%  { transform: translateY(48vh)  translateX(-10px) rotate(90deg); }
+      75%  { transform: translateY(72vh)  translateX(14px)  rotate(135deg); }
+      92%  { opacity: 1; }
+      100% { transform: translateY(106vh) translateX(-8px)  rotate(180deg); opacity: 0; }
+    }
+    .app { position:relative; z-index:1; max-width:500px; margin:0 auto; padding:0 0 110px; background: #0c0810; }
+
+    /* ── Mode switcher ── */
+    .mode-bar {
+      display: flex; background: #0c0810;
+      border-bottom: 1px solid var(--border);
+      position: sticky; top:0; z-index: 20;
+      padding-top: max(env(safe-area-inset-top, 44px), 44px);
+    }
+    .mode-btn {
+      flex: 1; padding: 14px 0; background: none; border: none;
+      font-family: 'Nunito', sans-serif; font-size: .88rem; font-weight: 700;
+      color: var(--soft); cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: color .18s, border-color .18s;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .mode-btn:hover { color: var(--text); }
+    .mode-btn.active-anime  { color: var(--pink-lt);  border-bottom-color: var(--pink-lt); }
+    .mode-btn.active-kdrama { color: var(--teal-lt);  border-bottom-color: var(--teal-lt); }
+    .mode-count {
+      font-size: .7rem; font-weight: 700;
+      padding: 2px 7px; border-radius: 99px;
+    }
+    .mode-btn.active-anime  .mode-count { background:rgba(200,80,122,0.2);  color:var(--pink-lt); }
+    .mode-btn.active-kdrama .mode-count { background:rgba(64,168,160,0.2);  color:var(--teal-lt); }
+
+    /* ── Header ── */
+    .header { padding: 14px 20px 14px; position:relative; background: #0c0810; }
+    .anime-list { padding:12px 14px; display:flex; flex-direction:column; gap:10px; background: #0c0810; }
+    .empty { text-align:center; padding:60px 24px; display:none; background: #0c0810; min-height: 60vh; }
+    .header::before {
+      content:''; position:absolute; top:0; left:0; right:0; height:2px;
+      transition: background .3s;
+    }
+    .header.anime-mode::before  { background:linear-gradient(to right,transparent,var(--pink),var(--gold-lt),var(--pink),transparent); }
+    .header.kdrama-mode::before { background:linear-gradient(to right,transparent,var(--teal),var(--teal-lt),var(--teal),transparent); }
+
+    .header-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+
+    .app-title {
+      font-family: 'Shippori Mincho B1', serif;
+      font-size: 1.4rem; font-weight:700;
+      transition: color .3s, text-shadow .3s;
+    }
+    .anime-mode  .app-title { color:var(--text); text-shadow:0 0 24px rgba(220,120,180,0.4); }
+    .kdrama-mode .app-title { color:var(--teal-lt); text-shadow:0 0 24px rgba(64,168,160,0.4); }
+
+    .count-badge { font-size:.78rem; font-weight:700; letter-spacing:.5px; }
+    .anime-mode  .count-badge { color:var(--pink-lt); }
+    .kdrama-mode .count-badge { color:var(--teal-lt); }
+
+    .search-sort-row { display:flex; gap:8px; align-items:center; }
+    .search-wrap { flex:1; position:relative; }
+    .search-icon { position:absolute; left:11px; top:50%; transform:translateY(-50%); color:var(--soft); font-size:.85rem; pointer-events:none; }
+
+    #searchInp {
+      width:100%; background:var(--card); border:1px solid var(--border);
+      padding:10px 12px 10px 32px; border-radius:10px;
+      font-family:'Nunito',sans-serif; font-size:.9rem; color:var(--text);
+      outline:none; -webkit-appearance:none; transition:border-color .2s;
+    }
+    #searchInp:focus { border-color:var(--accent-lt); }
+    #searchInp::placeholder { color:var(--softer); }
+
+    #sortSel {
+      background:var(--card); border:1px solid var(--border); border-radius:10px;
+      padding:10px 12px; font-family:'Nunito',sans-serif; font-size:.82rem;
+      color:var(--text); outline:none; cursor:pointer; flex-shrink:0;
+      -webkit-appearance:none; appearance:none;
+    }
+
+    /* ── Status tabs ── */
+    .tabs {
+      display:flex; overflow-x:auto; background:var(--card);
+      border-bottom:1px solid var(--border);
+      -webkit-overflow-scrolling:touch; scrollbar-width:none;
+      position: sticky; top: 0; z-index: 15;
+    }
+    .tabs::-webkit-scrollbar { display:none; }
+    .tab {
+      flex-shrink:0; padding:12px 16px; background:none; border:none;
+      font-family:'Nunito',sans-serif; font-size:.8rem; font-weight:600;
+      color:var(--soft); cursor:pointer;
+      border-bottom:2px solid transparent;
+      transition:color .18s,border-color .18s;
+      display:flex; align-items:center; gap:6px; white-space:nowrap;
+    }
+    .tab:hover { color:var(--text); }
+    .tab.active { color:var(--accent-lt); border-bottom-color:var(--accent-lt); }
+    .tab-count {
+      border-radius:99px; padding:1px 7px;
+      font-size:.72rem; font-weight:700;
+      background:rgba(200,80,122,0.2); color:var(--accent-lt);
+    }
+    .tab.active .tab-count { background:rgba(200,80,122,0.3); }
+
+    /* ── Cards ── */
+    
+    .anime-card {
+      background:var(--card); border:1px solid var(--border); border-radius:14px;
+      cursor:pointer; overflow:hidden;
+      transition:border-color .18s,background .18s;
+      animation:cardIn .28s ease both; position:relative;
+    }
+    .anime-card:hover  { background:var(--card2); border-color:var(--border-lt); }
+    .anime-card:active { opacity:.85; }
+    @keyframes cardIn { from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);} }
+
+    .card-strip { height:3px; width:100%; }
+    .card-body  { padding:14px 16px; }
+    .card-top   { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; margin-bottom:8px; }
+
+    .card-title {
+      font-family:'Shippori Mincho B1',serif; font-size:1.05rem; font-weight:700;
+      color:var(--text); line-height:1.3; flex:1;
+    }
+    .card-stars { display:flex; gap:1px; flex-shrink:0; margin-top:2px; }
+    .star       { font-size:.95rem; }
+    .star.on    { color:var(--gold-lt); }
+    .star.off   { color:rgba(240,220,235,0.18); }
+
+    .card-meta  { display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin-bottom:8px; }
+
+    .status-badge { font-size:.68rem; font-weight:700; letter-spacing:.5px; text-transform:uppercase; padding:3px 9px; border-radius:99px; }
+    .badge-watching   { background:rgba(74,159,212,0.18);  color:var(--s-watch); border:1px solid rgba(74,159,212,0.3); }
+    .badge-completed  { background:rgba(88,184,112,0.18);  color:var(--s-done);  border:1px solid rgba(88,184,112,0.3); }
+    .badge-planToWatch{ background:rgba(200,152,64,0.18);  color:var(--s-plan);  border:1px solid rgba(200,152,64,0.3); }
+    .badge-dropped    { background:rgba(200,88,88,0.18);   color:var(--s-drop);  border:1px solid rgba(200,88,88,0.3); }
+
+    .meta-dot  { color:var(--softer); font-size:.7rem; }
+    .meta-text { font-size:.78rem; color:var(--soft); }
+
+    .ep-wrap  { display:flex; align-items:center; gap:6px; }
+    .ep-track { height:3px; width:48px; background:rgba(240,220,235,0.1); border-radius:99px; overflow:hidden; flex-shrink:0; }
+    .ep-fill  { height:100%; border-radius:99px; }
+    .anime-mode  .ep-fill { background:var(--pink-lt); }
+    .kdrama-mode .ep-fill { background:var(--teal-lt); }
+
+    .card-tags { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:8px; }
+    .tag-chip  { font-size:.7rem; font-weight:600; padding:3px 9px; border-radius:99px; }
+    .anime-mode  .tag-chip { background:rgba(200,80,122,0.12); border:1px solid rgba(200,80,122,0.25); color:var(--pink-lt); }
+    .kdrama-mode .tag-chip { background:rgba(64,168,160,0.12);  border:1px solid rgba(64,168,160,0.25);  color:var(--teal-lt); }
+
+    .card-notes { font-size:.82rem; color:var(--soft); line-height:1.5; font-style:italic; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+
+    /* ── Empty ── */
+    .empty.show { display:block; }
+    .empty-icon  { font-size:3rem; margin-bottom:14px; }
+    .empty-title { font-family:'Shippori Mincho B1',serif; font-size:1.1rem; margin-bottom:6px; }
+    .anime-mode  .empty-title { color:var(--pink); }
+    .kdrama-mode .empty-title { color:var(--teal); }
+    .empty-sub   { font-size:.85rem; color:var(--softer); font-style:italic; }
+
+    /* ── FAB ── */
+    .fab {
+      position:fixed; bottom:max(env(safe-area-inset-bottom,24px),32px); right:20px; z-index:50;
+      width:58px; height:58px; border-radius:50%; border:none;
+      color:#fff; font-size:1.8rem; font-weight:300;
+      display:flex; align-items:center; justify-content:center;
+      cursor:pointer; transition:transform .18s,box-shadow .18s,background .3s;
+    }
+    .fab.anime-fab  { background:linear-gradient(135deg,#8a1840,#c8507a); box-shadow:0 6px 28px rgba(200,80,122,0.5); }
+    .fab.kdrama-fab { background:linear-gradient(135deg,#0a5050,#40a8a0); box-shadow:0 6px 28px rgba(64,168,160,0.5); }
+    .fab:hover  { transform:scale(1.08); }
+    .fab:active { transform:scale(.93); }
+
+    /* ── Overlay / Sheet ── */
+    .overlay {
+      position:fixed; inset:0; z-index:100; background:rgba(8,4,14,.72);
+      display:flex; align-items:flex-end;
+      opacity:0; pointer-events:none; transition:opacity .26s;
+    }
+    .overlay.open { opacity:1; pointer-events:all; }
+    .sheet {
+      width:100%; max-height:92dvh; overflow-y:auto;
+      background:var(--sheet); border-top:1px solid var(--accent-lt);
+      border-left:1px solid var(--border); border-right:1px solid var(--border);
+      border-radius:22px 22px 0 0;
+      padding:14px 22px max(env(safe-area-inset-bottom,28px),28px);
+      transform:translateY(100%); transition:transform .34s cubic-bezier(.32,.72,0,1);
+    }
+    .overlay.open .sheet { transform:translateY(0); }
+
+    .handle { width:36px; height:3px; background:var(--border); margin:0 auto 16px; border-radius:99px; }
+
+    /* Sheet header with close button */
+    .sheet-hd {
+      display:flex; align-items:center; justify-content:space-between;
+      margin-bottom:4px;
+    }
+    .sheet-title {
+      font-family:'Shippori Mincho B1',serif; font-size:1.4rem; font-weight:700;
+      color:var(--text); text-shadow:0 0 20px rgba(220,120,180,0.3);
+    }
+    .sheet-close {
+      background:rgba(240,220,235,0.08); border:1px solid var(--border);
+      border-radius:8px; color:var(--soft); font-size:.85rem; font-weight:700;
+      width:34px; height:34px; display:flex; align-items:center; justify-content:center;
+      cursor:pointer; transition:all .18s; flex-shrink:0;
+    }
+    .sheet-close:hover { border-color:var(--accent-lt); color:var(--accent-lt); }
+
+    .sheet-divider { height:1px; background:var(--border); margin:14px 0 18px; }
+
+    /* ── Form elements ── */
+    .field { margin-bottom:18px; }
+    .field>label { display:block; font-size:.68rem; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--soft); margin-bottom:8px; }
+
+    .inp {
+      width:100%; background:rgba(200,80,122,0.07); border:1px solid var(--border); border-radius:10px;
+      padding:12px 14px; font-family:'Nunito',sans-serif; font-size:.95rem; color:var(--text);
+      outline:none; -webkit-appearance:none; appearance:none; transition:border-color .2s;
+    }
+    .inp:focus { border-color:var(--accent-lt); }
+    .inp::placeholder { color:var(--softer); font-style:italic; }
+    textarea.inp { resize:vertical; min-height:90px; line-height:1.5; }
+
+    .status-row { display:flex; gap:7px; flex-wrap:wrap; }
+    .status-opt {
+      flex:1; min-width:calc(50% - 4px); padding:9px 8px; border-radius:10px;
+      border:1px solid var(--border); background:transparent;
+      font-family:'Nunito',sans-serif; font-size:.8rem; font-weight:600;
+      color:var(--soft); cursor:pointer; text-align:center; transition:all .16s;
+    }
+    .status-opt:hover { border-color:var(--border-lt); color:var(--text); }
+    .status-opt.sel-watching   { background:rgba(74,159,212,0.2);  border-color:var(--s-watch); color:var(--s-watch); }
+    .status-opt.sel-completed  { background:rgba(88,184,112,0.2);  border-color:var(--s-done);  color:var(--s-done); }
+    .status-opt.sel-planToWatch{ background:rgba(200,152,64,0.2);  border-color:var(--s-plan);  color:var(--s-plan); }
+    .status-opt.sel-dropped    { background:rgba(200,88,88,0.2);   border-color:var(--s-drop);  color:var(--s-drop); }
+
+    .star-picker { display:flex; gap:6px; }
+    .star-pick   { font-size:2rem; cursor:pointer; color:rgba(240,220,235,0.18); transition:color .12s,transform .12s; line-height:1; }
+    .star-pick.lit    { color:var(--gold-lt); }
+    .star-pick:active { transform:scale(.88); }
+
+    .two-col { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+
+    .platform-row { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:10px; }
+    .plat-chip {
+      padding:7px 13px; border-radius:99px; border:1px solid var(--border);
+      background:transparent; font-family:'Nunito',sans-serif;
+      font-size:.8rem; color:var(--soft); cursor:pointer; transition:all .15s; white-space:nowrap;
+    }
+    .plat-chip:hover { border-color:var(--border-lt); color:var(--text); }
+    .plat-chip.sel { background:var(--accent-dim); border-color:var(--accent-lt); color:var(--accent-lt); }
+
+    .tag-area {
+      background:rgba(200,80,122,0.07); border:1px solid var(--border); border-radius:10px;
+      padding:10px 12px; min-height:48px; display:flex; flex-wrap:wrap; gap:6px;
+      align-items:center; cursor:text; transition:border-color .2s;
+    }
+    .tag-area:focus-within { border-color:var(--accent-lt); }
+
+    .tag-rm {
+      display:flex; align-items:center; gap:4px;
+      background:var(--accent-dim); border:1px solid rgba(200,80,122,0.35);
+      border-radius:99px; padding:3px 8px 3px 10px;
+      font-size:.75rem; color:var(--accent-lt); font-weight:600;
+    }
+    .tag-rm button { background:none; border:none; cursor:pointer; color:var(--accent-lt); font-size:.7rem; padding:0; line-height:1; opacity:.7; }
+    .tag-rm button:hover { opacity:1; }
+
+    #tagInput { border:none; background:transparent; outline:none; font-family:'Nunito',sans-serif; font-size:.88rem; color:var(--text); min-width:80px; flex:1; }
+    #tagInput::placeholder { color:var(--softer); }
+
+    .tag-suggestions { display:flex; flex-wrap:wrap; gap:5px; margin-top:8px; }
+    .tag-suggest {
+      padding:4px 10px; border-radius:99px; border:1px dashed rgba(200,80,122,0.3);
+      background:transparent; font-family:'Nunito',sans-serif;
+      font-size:.74rem; color:var(--softer); cursor:pointer; transition:all .14s;
+    }
+    .tag-suggest:hover { border-color:var(--accent-lt); color:var(--accent-lt); background:var(--accent-dim); }
+
+    .btn-row { display:flex; gap:10px; margin-top:6px; }
+    .btn-primary {
+      flex:1; padding:14px; border-radius:12px;
+      font-family:'Nunito',sans-serif; font-size:.88rem; font-weight:700;
+      color:#fff; cursor:pointer; transition:opacity .18s; border:none;
+    }
+    .anime-mode  .btn-primary { background:linear-gradient(135deg,#6a0e30,#c0407a); }
+    .kdrama-mode .btn-primary { background:linear-gradient(135deg,#0a5050,#40a8a0); }
+    .btn-primary:hover  { opacity:.88; }
+    .btn-primary:active { opacity:.7; }
+
+    .btn-danger {
+      padding:14px 20px; background:transparent; border:1px solid rgba(200,88,88,0.4); border-radius:12px;
+      font-family:'Nunito',sans-serif; font-size:.88rem; font-weight:700;
+      color:var(--s-drop); cursor:pointer; transition:background .18s;
+    }
+    .btn-danger:hover { background:rgba(200,88,88,0.12); }
+
+    .btn-ghost {
+      background:transparent; border:1px solid var(--border); border-radius:10px;
+      font-family:'Nunito',sans-serif; font-size:.82rem; font-weight:600;
+      color:var(--soft); padding:9px 16px; cursor:pointer; transition:all .18s;
+    }
+    .btn-ghost:hover { border-color:var(--border-lt); color:var(--text); }
+
+    /* ── Detail ── */
+    .detail-strip   { height:4px; border-radius:99px; margin-bottom:18px; }
+    .detail-title   { font-family:'Shippori Mincho B1',serif; font-size:1.5rem; font-weight:700; color:var(--text); line-height:1.3; margin-bottom:10px; }
+    .detail-meta-row{ display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-bottom:16px; }
+    .detail-stars   { display:flex; gap:2px; }
+    .detail-star    { font-size:1.2rem; }
+    .detail-star.on { color:var(--gold-lt); }
+    .detail-star.off{ color:rgba(240,220,235,0.16); }
+
+    .info-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:18px; }
+    .info-box  { background:rgba(200,80,122,0.07); border:1px solid var(--border); border-radius:10px; padding:12px 14px; }
+    .info-lbl  { font-size:.62rem; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--soft); margin-bottom:4px; }
+    .info-val  { font-size:.95rem; font-weight:600; color:var(--text); }
+
+    .detail-tags     { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:16px; }
+    .detail-notes-lbl{ font-size:.62rem; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--soft); margin-bottom:8px; }
+    .detail-notes    { font-size:.95rem; color:var(--text); line-height:1.65; font-style:italic; white-space:pre-wrap; margin-bottom:20px; }
+
+    /* ── Toast ── */
+    .toast {
+      position:fixed; bottom:max(env(safe-area-inset-bottom,20px),32px); left:50%;
+      transform:translateX(-50%) translateY(14px);
+      background:var(--sheet); border:1px solid var(--accent-lt); border-radius:12px;
+      padding:11px 22px; font-size:.88rem; font-weight:600; color:var(--text);
+      opacity:0; pointer-events:none; z-index:999;
+      box-shadow:0 4px 24px rgba(200,80,122,0.35);
+      transition:opacity .22s,transform .3s cubic-bezier(.34,1.56,.64,1); white-space:nowrap;
+    }
+    .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body style="background:#0c0810">
+<div class="toast" id="toast"></div>
+
+<div class="app anime-mode" id="app">
+
+  <!-- Mode switcher -->
+  <div class="mode-bar">
+    <button class="mode-btn active-anime" id="modeAnimeBtn" onclick="setMode('anime')">
+      🌸 Anime <span class="mode-count" id="modeAnimeCount">0</span>
+    </button>
+    <button class="mode-btn" id="modeKdramaBtn" onclick="setMode('kdrama')">
+      🎬 K-Drama <span class="mode-count" id="modeKdramaCount">0</span>
+    </button>
+  </div>
+
+  <!-- Header -->
+  <div class="header anime-mode" id="header">
+    <div class="header-top">
+      <div class="app-title" id="appTitle">My Anime List</div>
+      <div class="count-badge" id="totalCount"></div>
+    </div>
+    <div class="search-sort-row">
+      <div class="search-wrap">
+        <span class="search-icon">⌕</span>
+        <input type="search" id="searchInp" placeholder="Search…" oninput="ST.search=this.value;render()"/>
+      </div>
+      <select id="sortSel" onchange="ST.sort=this.value;render()">
+        <option value="dateAdded">Recent</option>
+        <option value="title">A – Z</option>
+        <option value="rating">Rating</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Status tabs -->
+  <div class="tabs" id="tabs">
+    <button class="tab active" onclick="setFilter('all')">All <span class="tab-count" id="cnt-all">0</span></button>
+    <button class="tab" onclick="setFilter('watching')">Watching <span class="tab-count" id="cnt-watching">0</span></button>
+    <button class="tab" onclick="setFilter('completed')">Completed <span class="tab-count" id="cnt-completed">0</span></button>
+    <button class="tab" onclick="setFilter('planToWatch')">Plan to Watch <span class="tab-count" id="cnt-planToWatch">0</span></button>
+    <button class="tab" onclick="setFilter('dropped')">Dropped <span class="tab-count" id="cnt-dropped">0</span></button>
+  </div>
+
+  <!-- List -->
+  <div class="anime-list" id="animeList"></div>
+  <div class="empty" id="emptyState">
+    <div class="empty-icon" id="emptyIcon">🌸</div>
+    <div class="empty-title" id="emptyTitle">Nothing here yet</div>
+    <div class="empty-sub" id="emptySub">Tap the button below to add your first entry</div>
+  </div>
+</div>
+
+<button class="fab anime-fab" id="fab" onclick="openAdd()">+</button>
+
+<!-- Add / Edit Sheet -->
+<div class="overlay" id="formOv" onclick="closeSheet('formOv')">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="handle"></div>
+    <div id="formContent"></div>
+  </div>
+</div>
+
+<!-- Detail Sheet -->
+<div class="overlay" id="detailOv" onclick="closeSheet('detailOv')">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="handle"></div>
+    <div id="detailContent"></div>
+  </div>
+</div>
+
+<script>
+  // ── State ─────────────────────────────────────────────────
+  const ST = { mode:'anime', filter:'all', sort:'dateAdded', search:'' };
+
+  // Separate data stores — anime keeps original key so existing data is preserved!
+  let DA = { animes:[], tags:[] };   // anime data  → key: animeList2
+  let DK = { dramas:[], tags:[] };   // kdrama data → key: kdramaList1
+
+  let FS = { id:null, title:'', status:'watching', rating:0, tags:[], notes:'', epsWatched:'', epsTotal:'', seasons:'', platform:'', dateStarted:'', dateFinished:'' };
+
+  const ANIME_PLATFORMS  = ['Crunchyroll','Netflix','Funimation','HiDive','Disney+','Prime Video'];
+  const KDRAMA_PLATFORMS = ['Netflix','Viki','Kocowa','Disney+','Prime Video','Viu','Apple TV+'];
+
+  const STATUS_LABELS = { watching:'👁 Watching', completed:'✓ Completed', planToWatch:'⏰ Plan to Watch', dropped:'✗ Dropped' };
+  const STATUS_COLORS = { watching:'#4a9fd4', completed:'#58b870', planToWatch:'#c89840', dropped:'#c85858' };
+
+  // ── Getters ───────────────────────────────────────────────
+  const isAnime  = ()=> ST.mode==='anime';
+  const getList  = ()=> isAnime() ? DA.animes : DK.dramas;
+  const getTags  = ()=> isAnime() ? DA.tags   : DK.tags;
+  const getPlatforms = ()=> isAnime() ? ANIME_PLATFORMS : KDRAMA_PLATFORMS;
+
+  // ── Persist ───────────────────────────────────────────────
+  function save(){
+    try{
+      localStorage.setItem('animeList2',  JSON.stringify(DA));  // keep original key!
+      localStorage.setItem('kdramaList1', JSON.stringify(DK));
+    }catch(e){}
+  }
+  function load(){
+    try{
+      const sa=localStorage.getItem('animeList2');  if(sa)DA=JSON.parse(sa);
+      const sk=localStorage.getItem('kdramaList1'); if(sk)DK=JSON.parse(sk);
+    }catch(e){}
+  }
+
+  // ── Mode ──────────────────────────────────────────────────
+  function setMode(mode){
+    ST.mode=mode; ST.filter='all'; ST.search='';
+    document.getElementById('searchInp').value='';
+
+    const app    = document.getElementById('app');
+    const header = document.getElementById('header');
+    const fab    = document.getElementById('fab');
+
+    app.className    = `app ${mode}-mode`;
+    header.className = `header ${mode}-mode`;
+    fab.className    = `fab ${mode}-fab`;
+
+    document.getElementById('appTitle').textContent  = isAnime() ? 'My Anime List' : 'My K-Drama List';
+    document.getElementById('emptyIcon').textContent  = isAnime() ? '🌸' : '🎬';
+    document.getElementById('emptyTitle').textContent = isAnime() ? 'Nothing here yet' : 'No K-Dramas yet';
+    document.getElementById('emptySub').textContent   = isAnime()
+      ? 'Tap the button below to add your first anime'
+      : 'Tap the button below to add your first K-Drama';
+
+    // Update CSS accent for sheets/chips
+    const root=document.documentElement;
+    if(isAnime()){
+      root.style.setProperty('--accent',    'var(--pink)');
+      root.style.setProperty('--accent-lt', 'var(--pink-lt)');
+      root.style.setProperty('--accent-dim','var(--pink-dim)');
+    } else {
+      root.style.setProperty('--accent',    'var(--teal)');
+      root.style.setProperty('--accent-lt', 'var(--teal-lt)');
+      root.style.setProperty('--accent-dim','var(--teal-dim)');
+    }
+
+    document.getElementById('modeAnimeBtn').className  = `mode-btn${isAnime()?' active-anime':''}`;
+    document.getElementById('modeKdramaBtn').className = `mode-btn${!isAnime()?' active-kdrama':''}`;
+
+    setFilter('all');
+    updateParticles();
+  }
+
+  // ── Helpers ───────────────────────────────────────────────
+  function stars(n,total=5,cls='star'){
+    return Array.from({length:total},(_,i)=>
+      `<span class="${cls} ${i<n?'on':'off'}">${i<n?'★':'☆'}</span>`).join('');
+  }
+  function fmtDate(ym){
+    if(!ym)return'';
+    const[y,m]=ym.split('-');
+    return`${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m-1]} ${y}`;
+  }
+
+  function getFiltered(){
+    let list=[...getList()];
+    if(ST.filter!=='all') list=list.filter(a=>a.status===ST.filter);
+    if(ST.search.trim()){
+      const q=ST.search.toLowerCase();
+      list=list.filter(a=>a.title.toLowerCase().includes(q)||a.tags.some(t=>t.toLowerCase().includes(q)));
+    }
+    if(ST.sort==='title')       list.sort((a,b)=>a.title.localeCompare(b.title));
+    else if(ST.sort==='rating') list.sort((a,b)=>b.rating-a.rating);
+    else                        list.sort((a,b)=>b.id-a.id);
+    return list;
+  }
+
+  // ── Render ────────────────────────────────────────────────
+  function render(){
+    const list=getFiltered();
+    const el=document.getElementById('animeList');
+    const empty=document.getElementById('emptyState');
+
+    const all=getList();
+    const counts={all:all.length,watching:0,completed:0,planToWatch:0,dropped:0};
+    all.forEach(a=>{if(counts[a.status]!==undefined)counts[a.status]++;});
+    ['all','watching','completed','planToWatch','dropped'].forEach(k=>{
+      const ce=document.getElementById('cnt-'+k); if(ce)ce.textContent=counts[k];
+    });
+
+    const label=isAnime()?'anime':'drama';
+    document.getElementById('totalCount').textContent=`${all.length} ${label}`;
+    document.getElementById('modeAnimeCount').textContent=DA.animes.length;
+    document.getElementById('modeKdramaCount').textContent=DK.dramas.length;
+
+    // Update tab active state
+    document.querySelectorAll('.tab').forEach((t,i)=>{
+      const f=['all','watching','completed','planToWatch','dropped'][i];
+      t.classList.toggle('active',f===ST.filter);
+    });
+
+    if(!list.length){el.innerHTML='';empty.classList.add('show');return;}
+    empty.classList.remove('show');
+
+    el.innerHTML=list.map((a,i)=>{
+      const color=STATUS_COLORS[a.status]||'#888';
+      const pct=a.epsTotal>0?Math.min(a.epsWatched/a.epsTotal*100,100):0;
+      const hasEps=a.epsWatched||a.epsTotal;
+      const dateStr=[fmtDate(a.dateStarted),fmtDate(a.dateFinished)].filter(Boolean).join(' → ');
+      return`<div class="anime-card" onclick="openDetail(${a.id})" style="animation-delay:${i*25}ms">
+        <div class="card-strip" style="background:${color}"></div>
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-title">${a.title}</div>
+            <div class="card-stars">${stars(a.rating)}</div>
+          </div>
+          <div class="card-meta">
+            <span class="status-badge badge-${a.status}">${STATUS_LABELS[a.status]}</span>
+            ${a.platform?`<span class="meta-dot">•</span><span class="meta-text">${a.platform}</span>`:''}
+            ${a.seasons?`<span class="meta-dot">•</span><span class="meta-text">${a.seasons} season${a.seasons>1?'s':''}</span>`:''}
+            ${hasEps?`<span class="meta-dot">•</span>
+              <div class="ep-wrap">
+                ${a.epsTotal?`<div class="ep-track"><div class="ep-fill" style="width:${pct}%"></div></div>`:''}
+                <span class="meta-text">Ep ${a.epsWatched||0}${a.epsTotal?' / '+a.epsTotal:''}</span>
+              </div>`:''}
+          </div>
+          ${dateStr?`<div class="card-meta"><span class="meta-text">🗓 ${dateStr}</span></div>`:''}
+          ${a.tags.length?`<div class="card-tags">${a.tags.map(t=>`<span class="tag-chip">#${t}</span>`).join('')}</div>`:''}
+          ${a.notes?`<div class="card-notes">${a.notes}</div>`:''}
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // ── Filter ────────────────────────────────────────────────
+  function setFilter(f){ ST.filter=f; render(); }
+
+  // ── Sheets ────────────────────────────────────────────────
+  function openSheet(id) {document.getElementById(id).classList.add('open');    document.body.style.overflow='hidden';}
+  function closeSheet(id){document.getElementById(id).classList.remove('open'); document.body.style.overflow='';}
+
+  // ── Add / Edit ────────────────────────────────────────────
+  function openAdd(){
+    FS={id:null,title:'',status:'watching',rating:0,tags:[],notes:'',epsWatched:'',epsTotal:'',seasons:'',platform:'',dateStarted:'',dateFinished:''};
+    renderForm(); openSheet('formOv');
+    setTimeout(()=>document.getElementById('titleInp')?.focus(),360);
+  }
+
+  function openEdit(id){
+    closeSheet('detailOv');
+    const a=getList().find(x=>x.id===id);
+    if(!a)return;
+    FS={...a,tags:[...a.tags]};
+    renderForm(); openSheet('formOv');
+  }
+
+  function renderForm(){
+    const isK=!isAnime();
+    const titleLabel  = isK ? 'K-Drama Title' : 'Anime Title';
+    const placeholder = isK ? 'e.g. Crash Landing on You…' : 'e.g. Demon Slayer…';
+    const addLabel    = isK ? 'Add to K-Drama List' : 'Add to Anime List';
+    const platforms   = getPlatforms();
+
+    document.getElementById('formContent').innerHTML=`
+      <div class="sheet-hd">
+        <div class="sheet-title">${FS.id?(isK?'Edit Drama':'Edit Anime'):(isK?'Add K-Drama':'Add Anime')}</div>
+        <button class="sheet-close" onclick="closeSheet('formOv')">✕</button>
+      </div>
+      <div class="sheet-divider"></div>
+
+      <div class="field">
+        <label>${titleLabel}</label>
+        <input class="inp" id="titleInp" type="text" value="${FS.title||''}" placeholder="${placeholder}" maxlength="120" oninput="FS.title=this.value"/>
+      </div>
+
+      <div class="field">
+        <label>Status</label>
+        <div class="status-row">
+          ${['watching','completed','planToWatch','dropped'].map(s=>`
+            <button class="status-opt ${FS.status===s?'sel-'+s:''}" onclick="setStatus('${s}')">${STATUS_LABELS[s]}</button>`).join('')}
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Rating</label>
+        <div class="star-picker" id="starPicker">
+          ${[1,2,3,4,5].map(n=>`<span class="star-pick ${n<=FS.rating?'lit':''}" onclick="setRating(${n})">★</span>`).join('')}
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Episodes</label>
+        <div class="two-col">
+          <input class="inp" type="number" placeholder="Watched" min="0" value="${FS.epsWatched||''}" oninput="FS.epsWatched=+this.value||''" inputmode="numeric"/>
+          <input class="inp" type="number" placeholder="Total"   min="0" value="${FS.epsTotal||''}"   oninput="FS.epsTotal=+this.value||''"   inputmode="numeric"/>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Seasons</label>
+        <input class="inp" type="number" placeholder="Number of seasons" min="1" value="${FS.seasons||''}" oninput="FS.seasons=+this.value||''" inputmode="numeric"/>
+      </div>
+
+      <div class="field">
+        <label>Platform</label>
+        <div class="platform-row">
+          ${platforms.map(p=>`<button class="plat-chip ${FS.platform===p?'sel':''}" onclick="setPlatform('${p}')">${p}</button>`).join('')}
+        </div>
+        <input class="inp" type="text" placeholder="Or type another…" value="${platforms.includes(FS.platform)?'':FS.platform||''}" oninput="FS.platform=this.value" maxlength="40"/>
+      </div>
+
+      <div class="field">
+        <label>Dates</label>
+        <div class="two-col">
+          <input class="inp" type="month" value="${FS.dateStarted||''}"  onchange="FS.dateStarted=this.value"/>
+          <input class="inp" type="month" value="${FS.dateFinished||''}" onchange="FS.dateFinished=this.value"/>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Tags</label>
+        <div class="tag-area" onclick="document.getElementById('tagInput').focus()">
+          <div id="tagChips" style="display:contents"></div>
+          <input id="tagInput" type="text" placeholder="Type tag + Enter…" onkeydown="handleTagKey(event)" maxlength="30"/>
+        </div>
+        <div class="tag-suggestions" id="tagSuggestions"></div>
+      </div>
+
+      <div class="field">
+        <label>My Review / Notes</label>
+        <textarea class="inp" id="notesInp" placeholder="What did you think? (optional)" oninput="FS.notes=this.value">${FS.notes||''}</textarea>
+      </div>
+
+      <div class="btn-row">
+        ${FS.id?`<button class="btn-danger" onclick="deleteEntry(${FS.id})">Delete</button>`:''}
+        <button class="btn-primary" onclick="saveEntry()">${FS.id?'Save Changes':addLabel}</button>
+      </div>`;
+    renderTagChips(); renderTagSuggestions();
+  }
+
+  function renderTagChips(){
+    const el=document.getElementById('tagChips'); if(!el)return;
+    el.innerHTML=FS.tags.map(t=>`<span class="tag-rm">#${t}<button onclick="removeTag('${t}')">✕</button></span>`).join('');
+  }
+  function renderTagSuggestions(){
+    const el=document.getElementById('tagSuggestions'); if(!el)return;
+    const avail=getTags().filter(t=>!FS.tags.includes(t));
+    el.innerHTML=avail.length?avail.map(t=>`<button class="tag-suggest" onclick="addTagFromSuggest('${t}')">#${t}</button>`).join(''):'';
+  }
+  function handleTagKey(e){
+    if(e.key==='Enter'||e.key===','){ e.preventDefault(); addTagFromInput(); }
+    if(e.key==='Backspace'&&!e.target.value&&FS.tags.length) removeTag(FS.tags[FS.tags.length-1]);
+  }
+  function addTagFromInput(){
+    const inp=document.getElementById('tagInput');
+    const val=inp.value.trim().toLowerCase().replace(/[^a-z0-9-]/g,'');
+    if(val&&!FS.tags.includes(val)){
+      FS.tags.push(val);
+      const tags=getTags(); if(!tags.includes(val)) tags.push(val);
+      inp.value=''; renderTagChips(); renderTagSuggestions();
+    } else { inp.value=''; }
+  }
+  function addTagFromSuggest(t){ if(!FS.tags.includes(t)){FS.tags.push(t);renderTagChips();renderTagSuggestions();} }
+  function removeTag(t){ FS.tags=FS.tags.filter(x=>x!==t); renderTagChips(); renderTagSuggestions(); }
+
+  function setStatus(s){ FS.status=s; renderForm(); }
+  function setRating(n){
+    FS.rating=FS.rating===n?0:n;
+    document.querySelectorAll('.star-pick').forEach((s,i)=>s.className='star-pick'+(i<FS.rating?' lit':''));
+  }
+  function setPlatform(p){
+    FS.platform=FS.platform===p?'':p;
+    document.querySelectorAll('.plat-chip').forEach(c=>c.className='plat-chip'+(c.textContent.trim()===p&&FS.platform===p?' sel':''));
+  }
+
+  function saveEntry(){
+    const titleEl=document.getElementById('titleInp');
+    const title=(titleEl?.value||FS.title).trim();
+    if(!title){ toast('Please enter a title'); return; }
+    FS.title=title;
+    const list=getList();
+    if(FS.id){
+      const idx=list.findIndex(a=>a.id===FS.id);
+      if(idx>-1) list[idx]={...FS};
+      toast(isAnime()?'✿ Saved!':'🎬 Saved!');
+    } else {
+      list.push({...FS,id:Date.now()});
+      toast(isAnime()?'✿ Added to your list!':'🎬 Added to K-Drama list!');
+    }
+    save(); closeSheet('formOv'); render();
+  }
+
+  function deleteEntry(id){
+    if(isAnime()) DA.animes=DA.animes.filter(a=>a.id!==id);
+    else          DK.dramas=DK.dramas.filter(a=>a.id!==id);
+    save(); closeSheet('formOv'); render(); toast('Removed from list');
+  }
+
+  // ── Detail ────────────────────────────────────────────────
+  function openDetail(id){
+    const a=getList().find(x=>x.id===id);
+    if(!a)return;
+    const color=STATUS_COLORS[a.status]||'#888';
+    const pct=a.epsTotal>0?Math.min(a.epsWatched/a.epsTotal*100,100):0;
+    const dateStr=[fmtDate(a.dateStarted),fmtDate(a.dateFinished)].filter(Boolean).join(' → ');
+
+    document.getElementById('detailContent').innerHTML=`
+      <div class="sheet-hd">
+        <div style="font-size:.72rem;color:var(--soft);font-weight:700;letter-spacing:2px;text-transform:uppercase">${isAnime()?'Anime':'K-Drama'}</div>
+        <button class="sheet-close" onclick="closeSheet('detailOv')">✕</button>
+      </div>
+      <div class="detail-strip" style="background:${color}"></div>
+      <div class="detail-title">${a.title}</div>
+      <div class="detail-meta-row">
+        <span class="status-badge badge-${a.status}">${STATUS_LABELS[a.status]}</span>
+        <div class="detail-stars">${stars(a.rating,5,'detail-star')}</div>
+      </div>
+      <div class="info-grid">
+        ${a.platform?`<div class="info-box"><div class="info-lbl">Platform</div><div class="info-val">${a.platform}</div></div>`:''}
+        ${a.seasons?`<div class="info-box"><div class="info-lbl">Seasons</div><div class="info-val">${a.seasons} season${a.seasons>1?'s':''}</div></div>`:''}
+        ${(a.epsWatched||a.epsTotal)?`<div class="info-box">
+          <div class="info-lbl">Episodes</div>
+          <div class="info-val">${a.epsWatched||0}${a.epsTotal?' / '+a.epsTotal:''}</div>
+          ${a.epsTotal?`<div class="ep-track" style="width:100%;margin-top:6px;height:4px"><div class="ep-fill" style="width:${pct}%"></div></div>`:''}
+        </div>`:''}
+        ${a.dateStarted?`<div class="info-box"><div class="info-lbl">Started</div><div class="info-val">${fmtDate(a.dateStarted)}</div></div>`:''}
+        ${a.dateFinished?`<div class="info-box"><div class="info-lbl">Finished</div><div class="info-val">${fmtDate(a.dateFinished)}</div></div>`:''}
+      </div>
+      ${a.tags.length?`<div class="detail-tags">${a.tags.map(t=>`<span class="tag-chip">#${t}</span>`).join('')}</div>`:''}
+      ${a.notes?`<div class="detail-notes-lbl">My Review</div><div class="detail-notes">${a.notes}</div>`:''}
+      <div class="btn-row">
+        <button class="btn-ghost" onclick="closeSheet('detailOv')">Close</button>
+        <button class="btn-primary" onclick="openEdit(${a.id})">Edit</button>
+      </div>`;
+    openSheet('detailOv');
+  }
+
+  // ── Toast ─────────────────────────────────────────────────
+  let toastTimer;
+  function toast(msg){
+    const el=document.getElementById('toast');
+    el.textContent=msg; el.classList.add('show');
+    clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'),2200);
+  }
+
+  // ── Particles ─────────────────────────────────────────────
+  (function(){
+    // Sakura petals (anime)
+    const colors=['#e888b8','#f4a8d4','#d46090','#f0c0dc','#c85888'];
+    for(let i=0;i<26;i++){
+      const p=document.createElement('div'); p.className='petal';
+      const sz=5+Math.random()*9;
+      p.style.cssText=`left:${Math.random()*100}%;top:0;width:${sz}px;height:${sz}px;
+        background:${colors[Math.floor(Math.random()*colors.length)]};
+        opacity:${0.4+Math.random()*0.45};
+        animation-duration:${8+Math.random()*11}s;animation-delay:${-Math.random()*8}s;
+        filter:drop-shadow(0 1px 4px rgba(210,100,160,0.5));`;
+      document.body.appendChild(p);
+    }
+    // Snow (k-drama)
+    for(let i=0;i<40;i++){
+      const s=document.createElement('div'); s.className='snowflake';
+      const sz=2+Math.random()*4;
+      const opacity=0.5+Math.random()*0.5;
+      s.style.cssText=`left:${Math.random()*100}%;top:0;width:${sz}px;height:${sz}px;
+        opacity:${opacity};
+        animation-duration:${10+Math.random()*14}s;animation-delay:${-Math.random()*12}s;`;
+      document.body.appendChild(s);
+    }
+  })();
+
+  function updateParticles(){
+    const anime=isAnime();
+    document.querySelectorAll('.petal').forEach(p=>p.style.display=anime?'':'none');
+    document.querySelectorAll('.snowflake').forEach(s=>s.classList.toggle('visible',!anime));
+  }
+
+  // ── Init ──────────────────────────────────────────────────
+  load(); render(); updateParticles();
+
+  try{
+    const m={name:'My Anime & K-Drama List',short_name:'My Lists',start_url:'./',display:'standalone',
+      background_color:'#0c0810',theme_color:'#0c0810',
+      icons:[{src:"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj4KICA8ZGVmcz4KICAgIDxyYWRpYWxHcmFkaWVudCBpZD0iYSIgY3g9IjUwJSIgY3k9IjM1JSIgcj0iNjUlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzIwMGMyMCIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMwYzA4MTAiLz4KICAgIDwvcmFkaWFsR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiByeD0iMjIiIGZpbGw9InVybCgjYSkiLz4KICA8IS0tIGZhbGxpbmcgcGV0YWxzIGJnIC0tPgogIDxlbGxpcHNlIGN4PSIxNSIgY3k9IjMwIiByeD0iNCIgcnk9IjYiIGZpbGw9IiNlODg4YjgiIG9wYWNpdHk9Ii4zNSIgdHJhbnNmb3JtPSJyb3RhdGUoMjUgMTUgMzApIi8+CiAgPGVsbGlwc2UgY3g9IjgyIiBjeT0iMjAiIHJ4PSIzIiByeT0iNSIgZmlsbD0iI2Y0YThkNCIgb3BhY2l0eT0iLjMiIHRyYW5zZm9ybT0icm90YXRlKC0xNSA4MiAyMCkiLz4KICA8ZWxsaXBzZSBjeD0iODgiIGN5PSI3MCIgcng9IjQiIHJ5PSI2IiBmaWxsPSIjZTg4OGI4IiBvcGFjaXR5PSIuMjgiIHRyYW5zZm9ybT0icm90YXRlKDQwIDg4IDcwKSIvPgogIDxlbGxpcHNlIGN4PSIxMCIgY3k9Ijc1IiByeD0iMyIgcnk9IjUiIGZpbGw9IiNmNGE4ZDQiIG9wYWNpdHk9Ii4zIiB0cmFuc2Zvcm09InJvdGF0ZSgtMzAgMTAgNzUpIi8+CiAgPCEtLSBiaWcgYmxvc3NvbSAtLT4KICA8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg1MCw0OCkiPgogICAgPCEtLSBwZXRhbHMgLS0+CiAgICA8ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yMCIgcng9IjgiIHJ5PSIxNCIgZmlsbD0iI2Y0YThkNCIgb3BhY2l0eT0iLjk1Ii8+CiAgICA8ZWxsaXBzZSBjeD0iMCIgY3k9IjIwIiByeD0iOCIgcnk9IjE0IiBmaWxsPSIjZjRhOGQ0IiBvcGFjaXR5PSIuOTUiLz4KICAgIDxlbGxpcHNlIGN4PSItMjAiIGN5PSIwIiByeD0iMTQiIHJ5PSI4IiBmaWxsPSIjZjRhOGQ0IiBvcGFjaXR5PSIuOTUiLz4KICAgIDxlbGxpcHNlIGN4PSIyMCIgY3k9IjAiIHJ4PSIxNCIgcnk9IjgiIGZpbGw9IiNmNGE4ZDQiIG9wYWNpdHk9Ii45NSIvPgogICAgPGVsbGlwc2UgY3g9Ii0xNCIgY3k9Ii0xNCIgcng9IjEwIiByeT0iMTMiIGZpbGw9IiNlODg4YjgiIG9wYWNpdHk9Ii44IiB0cmFuc2Zvcm09InJvdGF0ZSgtNDUpIi8+CiAgICA8ZWxsaXBzZSBjeD0iMTQiIGN5PSItMTQiIHJ4PSIxMCIgcnk9IjEzIiBmaWxsPSIjZTg4OGI4IiBvcGFjaXR5PSIuOCIgdHJhbnNmb3JtPSJyb3RhdGUoNDUpIi8+CiAgICA8ZWxsaXBzZSBjeD0iLTE0IiBjeT0iMTQiIHJ4PSIxMCIgcnk9IjEzIiBmaWxsPSIjZTg4OGI4IiBvcGFjaXR5PSIuOCIgdHJhbnNmb3JtPSJyb3RhdGUoNDUpIi8+CiAgICA8ZWxsaXBzZSBjeD0iMTQiIGN5PSIxNCIgcng9IjEwIiByeT0iMTMiIGZpbGw9IiNlODg4YjgiIG9wYWNpdHk9Ii44IiB0cmFuc2Zvcm09InJvdGF0ZSgtNDUpIi8+CiAgICA8IS0tIGNlbnRlciAtLT4KICAgIDxjaXJjbGUgcj0iNyIgZmlsbD0iI2ZmZjBmOCIvPgogICAgPGNpcmNsZSByPSI0IiBmaWxsPSIjZjBjMGRjIi8+CiAgICA8Y2lyY2xlIHI9IjIiIGZpbGw9IiNlODg4YjgiLz4KICA8L2c+CiAgPCEtLSBLLURyYW1hIHNub3dmbGFrZSAtLT4KICA8dGV4dCB4PSI3MiIgeT0iOTAiIGZvbnQtc2l6ZT0iMTMiIGZpbGw9IiNhMGQwZjgiIG9wYWNpdHk9Ii44Ij7inYQ8L3RleHQ+Cjwvc3ZnPg==",
+        sizes:'192x192',type:'image/svg+xml'}]};
+    const b=new Blob([JSON.stringify(m)],{type:'application/manifest+json'});
+    document.head.appendChild(Object.assign(document.createElement('link'),{rel:'manifest',href:URL.createObjectURL(b)}));
+  }catch(e){}
+</script>
+</body>
+</html>
