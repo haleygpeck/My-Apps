@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="Luna"/>
+  <meta name="theme-color" content="#080510"/>
+  <title>🌙 Luna — Cycle Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;500&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg:     #080510;
+      --card:   #110820;
+      --card2:  #180b2a;
+      --dark:   #04020a;
+      --purp:   #7a3db8;
+      --purp-lt:#b06ae0;
+      --purp-dim:rgba(122,61,184,0.18);
+      --silver: #c8b8e8;
+      --silver-lt:#e8dcff;
+      --teal:   #2ab8a8;
+      --rose:   #e0506a;
+      --rose-lt:#f07888;
+      --rose-dim:rgba(224,80,106,0.18);
+      --gold:   #c4963a;
+      --gold-lt:#e0b860;
+      --text:   #ddd0f8;
+      --soft:   rgba(210,195,245,0.52);
+      --softer: rgba(210,195,245,0.28);
+      --border: rgba(122,61,184,0.28);
+      --border-rose:rgba(224,80,106,0.3);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html,body{background:var(--bg);min-height:100dvh;}
+    body{
+      font-family:'IM Fell English',serif;
+      color:var(--text);overflow-x:hidden;
+      background:var(--bg);
+      background-image:
+        radial-gradient(ellipse 60% 40% at 50% 0%,rgba(80,20,140,0.35) 0%,transparent 65%),
+        radial-gradient(ellipse 40% 50% at 90% 80%,rgba(180,40,80,0.15) 0%,transparent 60%),
+        url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%237a3db8' fill-opacity='0.03'%3E%3Ccircle cx='20' cy='20' r='1.2'/%3E%3Ccircle cx='70' cy='10' r='.8'/%3E%3Ccircle cx='100' cy='45' r='1.2'/%3E%3Ccircle cx='15' cy='80' r='.8'/%3E%3Ccircle cx='55' cy='60' r='.8'/%3E%3Ccircle cx='95' cy='95' r='1.2'/%3E%3Ccircle cx='40' cy='105' r='.8'/%3E%3Cpath d='M60 2 L62 8 L68 8 L63 12 L65 18 L60 14 L55 18 L57 12 L52 8 L58 8Z' fill-opacity='0.6'/%3E%3Cpath d='M100 60 L101 64 L105 64 L102 67 L103 71 L100 68 L97 71 L98 67 L95 64 L99 64Z' fill-opacity='0.4'/%3E%3C/g%3E%3C/svg%3E");
+    }
+    .app{max-width:480px;margin:0 auto;padding:0 0 100px;background:#080510;min-height:100dvh;}
+
+    /* ── Header ── */
+    .header{
+      background:linear-gradient(180deg,#04020a 0%,#080510 100%);
+      padding:52px 20px 20px;
+      border-bottom:1px solid rgba(122,61,184,0.35);
+      position:relative;overflow:hidden;text-align:center;
+    }
+    .header::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(to right,transparent,var(--rose),var(--purp-lt),var(--rose),transparent);}
+    .app-eyebrow{font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:5px;text-transform:uppercase;color:rgba(224,80,106,0.65);margin-bottom:8px;}
+    .app-title{font-family:'Cinzel Decorative',serif;font-size:2.4rem;font-weight:700;color:var(--silver-lt);text-shadow:0 0 30px rgba(224,80,106,0.4),0 0 60px rgba(122,61,184,0.3);margin-bottom:4px;}
+    .app-sub{font-style:italic;font-size:.9rem;color:var(--soft);}
+    .moon-phase-row{display:flex;justify-content:center;gap:6px;margin-top:12px;font-size:1.2rem;opacity:.5;}
+
+    /* ── Phase banner ── */
+    .phase-banner{
+      padding:14px 20px;
+      display:flex;align-items:center;justify-content:space-between;
+      border-bottom:1px solid var(--border);
+    }
+    .phase-info{display:flex;align-items:center;gap:12px;}
+    .phase-icon{font-size:2rem;filter:drop-shadow(0 0 8px var(--rose));}
+    .phase-name{font-family:'Cinzel',serif;font-size:.8rem;letter-spacing:2px;text-transform:uppercase;margin-bottom:2px;}
+    .phase-desc{font-size:.78rem;color:var(--soft);font-style:italic;}
+    .cycle-day{text-align:right;}
+    .cycle-day-num{font-family:'Cinzel Decorative',serif;font-size:1.8rem;color:var(--silver-lt);line-height:1;}
+    .cycle-day-lbl{font-size:.6rem;letter-spacing:2px;text-transform:uppercase;color:var(--soft);font-family:'Cinzel',serif;}
+
+    /* ── Section label ── */
+    .section-lbl{font-family:'Cinzel',serif;font-size:.58rem;font-weight:500;letter-spacing:4px;text-transform:uppercase;color:var(--purp-lt);padding:16px 20px 10px;display:flex;align-items:center;gap:10px;}
+    .section-lbl::after{content:'';flex:1;height:1px;background:linear-gradient(to right,rgba(122,61,184,0.4),transparent);}
+
+    /* ── Calendar ── */
+    .cal-wrap{padding:0 16px;}
+    .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+    .cal-nav{background:none;border:none;cursor:pointer;color:var(--soft);font-size:1.2rem;padding:6px 10px;transition:color .2s;}
+    .cal-nav:hover{color:var(--purp-lt);}
+    .cal-month{font-family:'Cinzel',serif;font-size:.85rem;letter-spacing:3px;text-transform:uppercase;color:var(--silver);}
+    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
+    .cal-dow{font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:1px;text-transform:uppercase;color:var(--softer);text-align:center;padding:4px 0;}
+    .cal-day{
+      aspect-ratio:1;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;
+      font-size:.82rem;cursor:pointer;
+      position:relative;transition:all .15s;
+      border:1px solid transparent;
+    }
+    .cal-day:hover{background:var(--purp-dim);border-color:var(--purp);}
+    .cal-day.empty{cursor:default;}
+    .cal-day.today{border-color:var(--purp-lt);color:var(--purp-lt);}
+    .cal-day.period{background:rgba(224,80,106,0.25);border-color:var(--rose);color:var(--rose-lt);}
+    .cal-day.period-start{background:var(--rose);color:#fff;box-shadow:0 0 10px rgba(224,80,106,0.5);}
+    .cal-day.predicted{background:rgba(224,80,106,0.1);border-color:rgba(224,80,106,0.3);color:rgba(240,120,136,0.7);}
+    .cal-day.fertile{background:rgba(42,184,168,0.12);border-color:rgba(42,184,168,0.3);color:var(--teal);}
+    .cal-day.ovulation{background:rgba(42,184,168,0.25);border-color:var(--teal);color:var(--teal);box-shadow:0 0 8px rgba(42,184,168,0.3);}
+    .cal-day.selected{border-color:var(--gold-lt);color:var(--gold-lt);background:rgba(196,150,58,0.12);}
+    .cal-dot{width:4px;height:4px;border-radius:50%;position:absolute;bottom:3px;left:50%;transform:translateX(-50%);background:var(--purp-lt);}
+
+    /* ── Legend ── */
+    .legend{display:flex;flex-wrap:wrap;gap:8px;padding:10px 20px 0;}
+    .leg-item{display:flex;align-items:center;gap:5px;font-size:.68rem;color:var(--soft);}
+    .leg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+
+    /* ── Log day sheet trigger ── */
+    .log-hint{margin:14px 16px 0;background:rgba(122,61,184,0.1);border:1px solid rgba(122,61,184,0.25);border-radius:8px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:background .18s;}
+    .log-hint:hover{background:rgba(122,61,184,0.18);}
+    .log-hint-text{font-size:.9rem;font-style:italic;color:var(--soft);}
+    .log-hint-btn{font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:2px;text-transform:uppercase;color:var(--purp-lt);border:1px solid rgba(122,61,184,0.4);padding:6px 12px;border-radius:99px;}
+
+    /* ── Stats row ── */
+    .stats-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:0 16px;}
+    .stat-box{background:rgba(17,8,32,0.9);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;}
+    .stat-val{font-family:'Cinzel Decorative',serif;font-size:1.3rem;color:var(--silver-lt);line-height:1;margin-bottom:3px;}
+    .stat-lbl{font-family:'Cinzel',serif;font-size:.52rem;letter-spacing:2px;text-transform:uppercase;color:var(--soft);}
+
+    /* ── Log cards ── */
+    .log-list{display:flex;flex-direction:column;gap:8px;padding:0 16px;}
+    .log-card{background:rgba(17,8,32,0.9);border:1px solid var(--border);border-radius:10px;padding:14px 16px;cursor:pointer;transition:background .16s;}
+    .log-card:hover{background:rgba(24,11,42,0.95);}
+    .log-card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+    .log-date{font-family:'Cinzel',serif;font-size:.75rem;letter-spacing:2px;text-transform:uppercase;color:var(--purp-lt);}
+    .log-flow{font-size:.7rem;padding:3px 10px;border-radius:99px;font-family:'Cinzel',serif;letter-spacing:1px;}
+    .flow-light{background:rgba(224,80,106,0.12);border:1px solid rgba(224,80,106,0.3);color:var(--rose-lt);}
+    .flow-medium{background:rgba(224,80,106,0.22);border:1px solid var(--rose);color:var(--rose-lt);}
+    .flow-heavy{background:rgba(224,80,106,0.35);border:1px solid var(--rose);color:#fff;}
+    .log-chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px;}
+    .log-chip{font-size:.7rem;padding:3px 9px;border-radius:99px;background:rgba(122,61,184,0.12);border:1px solid rgba(122,61,184,0.25);color:var(--purp-lt);}
+    .log-note{font-size:.8rem;color:var(--soft);font-style:italic;}
+    .no-logs{text-align:center;padding:32px;color:var(--softer);font-style:italic;}
+
+    /* ── FAB ── */
+    .fab{position:fixed;bottom:max(env(safe-area-inset-bottom,24px),32px);right:20px;z-index:50;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#3a0860,#8a1840);border:1.5px solid var(--rose-lt);color:#fff;font-size:1.5rem;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 24px rgba(224,80,106,0.5);transition:transform .18s,box-shadow .18s;}
+    .fab:hover{transform:scale(1.08);box-shadow:0 8px 32px rgba(224,80,106,0.65);}
+    .fab:active{transform:scale(.93);}
+
+    /* ── Overlays ── */
+    .overlay{position:fixed;inset:0;z-index:100;background:rgba(4,2,10,0.82);display:flex;align-items:flex-end;opacity:0;pointer-events:none;transition:opacity .26s;}
+    .overlay.open{opacity:1;pointer-events:all;}
+    .sheet{width:100%;max-height:92dvh;overflow-y:auto;background:#0d0818;border-top:2px solid var(--rose);border-left:1px solid var(--border);border-right:1px solid var(--border);border-radius:22px 22px 0 0;padding:14px 22px max(env(safe-area-inset-bottom,28px),28px);transform:translateY(100%);transition:transform .34s cubic-bezier(.32,.72,0,1);}
+    .overlay.open .sheet{transform:translateY(0);}
+    .handle{width:36px;height:3px;background:var(--border);margin:0 auto 18px;border-radius:99px;}
+    .sheet-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
+    .sheet-title{font-family:'Cinzel Decorative',serif;font-size:1.5rem;color:var(--silver-lt);text-shadow:0 0 16px rgba(224,80,106,0.4);}
+    .sheet-close{background:rgba(224,80,106,0.12);border:1px solid rgba(224,80,106,0.3);border-radius:8px;color:var(--soft);font-size:.85rem;font-weight:700;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .18s;}
+    .sheet-close:hover{background:rgba(224,80,106,0.25);color:var(--rose-lt);border-color:var(--rose-lt);}
+    .sheet-divider{height:1px;background:var(--border-rose);margin:12px 0 18px;}
+    .field{margin-bottom:18px;}
+    .field>label{display:block;font-family:'Cinzel',serif;font-size:.55rem;font-weight:500;letter-spacing:3px;text-transform:uppercase;color:rgba(224,80,106,0.65);margin-bottom:8px;}
+    .inp{width:100%;background:#0a0614;border:1px solid rgba(122,61,184,0.3);border-radius:6px;padding:12px 14px;font-family:'IM Fell English',serif;font-size:1rem;color:var(--text);outline:none;-webkit-appearance:none;appearance:none;transition:border-color .2s;}
+    .inp:focus{border-color:var(--rose);box-shadow:0 0 8px rgba(224,80,106,0.2);}
+    .inp::placeholder{color:var(--softer);font-style:italic;}
+    textarea.inp{resize:vertical;min-height:80px;line-height:1.5;}
+
+    /* Toggle chips */
+    .chip-grid{display:flex;flex-wrap:wrap;gap:7px;}
+    .tog-chip{padding:7px 13px;border-radius:99px;border:1px solid rgba(122,61,184,0.25);background:transparent;font-family:'IM Fell English',serif;font-size:.85rem;color:var(--soft);cursor:pointer;transition:all .15s;white-space:nowrap;}
+    .tog-chip:hover{border-color:var(--purp-lt);color:var(--text);}
+    .tog-chip.on{background:var(--purp-dim);border-color:var(--purp-lt);color:var(--purp-lt);}
+    .tog-chip.on.rose{background:var(--rose-dim);border-color:var(--rose-lt);color:var(--rose-lt);}
+
+    /* Flow picker */
+    .flow-row{display:flex;gap:8px;}
+    .flow-btn{flex:1;padding:10px;border-radius:8px;border:1px solid rgba(122,61,184,0.25);background:transparent;font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:1px;color:var(--soft);cursor:pointer;text-align:center;transition:all .15s;}
+    .flow-btn:hover{border-color:var(--rose);color:var(--rose-lt);}
+    .flow-btn.on{background:var(--rose-dim);border-color:var(--rose);color:var(--rose-lt);}
+
+    /* Mood picker */
+    .mood-row{display:flex;gap:8px;flex-wrap:wrap;}
+    .mood-btn{width:44px;height:44px;border-radius:50%;border:2px solid rgba(122,61,184,0.2);background:transparent;font-size:1.4rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+    .mood-btn:hover{border-color:var(--purp-lt);transform:scale(1.1);}
+    .mood-btn.on{border-color:var(--purp-lt);background:var(--purp-dim);transform:scale(1.08);box-shadow:0 0 10px rgba(122,61,184,0.4);}
+
+    /* Buttons */
+    .btn-primary{width:100%;padding:14px;background:linear-gradient(135deg,#3a0860,#8a1840);border:1px solid var(--rose-lt);font-family:'Cinzel',serif;font-size:.78rem;font-weight:500;letter-spacing:3px;text-transform:uppercase;color:#fff;cursor:pointer;transition:all .2s;margin-top:4px;border-radius:6px;}
+    .btn-primary:hover{box-shadow:0 0 16px rgba(224,80,106,0.4);}
+    .btn-row{display:flex;gap:10px;margin-top:6px;}
+    .btn-danger{padding:13px 18px;background:transparent;border:1px solid rgba(200,80,80,0.4);font-family:'IM Fell English',serif;font-size:.88rem;font-weight:600;color:#c05050;cursor:pointer;transition:background .18s;border-radius:4px;}
+    .btn-danger:hover{background:rgba(200,80,80,0.1);}
+    .btn-ghost{background:transparent;border:1px solid var(--border);font-family:'IM Fell English',serif;font-size:.82rem;color:var(--soft);padding:8px 14px;cursor:pointer;transition:all .2s;border-radius:6px;}
+    .btn-ghost:hover{border-color:var(--purp-lt);color:var(--purp-lt);}
+
+    /* ── Patch tracker ── */
+    .patch-card{margin:0 16px;background:rgba(17,8,32,0.9);border:1px solid rgba(196,150,58,0.3);border-radius:12px;padding:16px;position:relative;overflow:hidden;}
+    .patch-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(to right,transparent,var(--gold-lt),transparent);}
+    .patch-card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+    .patch-title{font-family:'Cinzel',serif;font-size:.72rem;letter-spacing:3px;text-transform:uppercase;color:var(--gold-lt);}
+    .patch-settings-btn{background:none;border:1px solid rgba(196,150,58,0.3);border-radius:6px;color:var(--gold-lt);font-size:.7rem;padding:5px 10px;cursor:pointer;font-family:'Cinzel',serif;letter-spacing:1px;transition:all .18s;}
+    .patch-settings-btn:hover{background:rgba(196,150,58,0.1);}
+    .patch-slots{display:flex;gap:10px;margin-bottom:12px;}
+    .patch-slot{flex:1;border-radius:10px;padding:12px 8px;text-align:center;border:1.5px solid rgba(196,150,58,0.25);background:rgba(196,150,58,0.05);transition:all .2s;}
+    .patch-slot.active{border-color:var(--gold-lt);background:rgba(196,150,58,0.18);box-shadow:0 0 12px rgba(196,150,58,0.2);}
+    .patch-slot.past{border-color:rgba(196,150,58,0.15);background:rgba(196,150,58,0.06);opacity:.6;}
+    .patch-slot.free-week{border-color:rgba(122,61,184,0.3);background:rgba(122,61,184,0.08);}
+    .patch-slot-num{font-family:'Cinzel Decorative',serif;font-size:1.1rem;color:var(--gold-lt);line-height:1;margin-bottom:3px;}
+    .patch-slot-lbl{font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--soft);}
+    .patch-slot-days{font-size:.72rem;color:var(--soft);font-style:italic;margin-top:3px;}
+    .patch-slot-badge{font-size:.6rem;font-family:'Cinzel',serif;letter-spacing:1px;text-transform:uppercase;margin-top:4px;}
+    .patch-status{font-size:.82rem;color:var(--soft);font-style:italic;text-align:center;padding:4px 0;}
+    .patch-change-btn{width:100%;padding:11px;background:linear-gradient(135deg,rgba(140,90,10,0.4),rgba(196,150,58,0.25));border:1px solid rgba(196,150,58,0.4);border-radius:8px;font-family:'Cinzel',serif;font-size:.7rem;letter-spacing:2px;text-transform:uppercase;color:var(--gold-lt);cursor:pointer;margin-top:10px;transition:all .18s;}
+    .patch-change-btn:hover{background:linear-gradient(135deg,rgba(140,90,10,0.6),rgba(196,150,58,0.35));box-shadow:0 0 12px rgba(196,150,58,0.25);}
+
+    /* Toast */
+    .toast{position:fixed;bottom:max(env(safe-area-inset-bottom,20px),32px);left:50%;transform:translateX(-50%) translateY(14px);background:#0d0818;border:1px solid var(--rose);padding:11px 22px;font-family:'IM Fell English',serif;font-size:.88rem;font-style:italic;color:var(--rose-lt);opacity:0;pointer-events:none;z-index:999;box-shadow:0 6px 24px rgba(224,80,106,0.3);transition:opacity .22s,transform .3s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;border-radius:6px;}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  </style>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+<div class="app">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="app-eyebrow">✦ cycle tracking ✦</div>
+    <div class="app-title">Luna</div>
+    <div class="app-sub">your lunar cycle companion</div>
+    <div class="moon-phase-row">🌑 🌒 🌓 🌔 🌕 🌖 🌗 🌘</div>
+  </div>
+
+  <!-- Phase banner -->
+  <div class="phase-banner" id="phaseBanner"></div>
+
+  <!-- Stats -->
+  <div class="section-lbl">Your Cycle</div>
+  <div class="stats-row">
+    <div class="stat-box"><div class="stat-val" id="statAvgCycle">—</div><div class="stat-lbl">Avg Length</div></div>
+    <div class="stat-box"><div class="stat-val" id="statAvgPeriod">—</div><div class="stat-lbl">Avg Period</div></div>
+    <div class="stat-box"><div class="stat-val" id="statNextIn">—</div><div class="stat-lbl">Next In</div></div>
+  </div>
+
+  <!-- Patch tracker -->
+  <div class="section-lbl">Birth Control Patch</div>
+  <div class="patch-card" id="patchCard">
+    <div class="patch-card-top">
+      <div class="patch-title">🩹 Zamfry Patch Schedule</div>
+      <button class="patch-settings-btn" onclick="openPatchSettings()">⚙ Settings</button>
+    </div>
+    <div class="patch-slots" id="patchSlots"></div>
+    <div class="patch-status" id="patchStatus"></div>
+    <button class="patch-change-btn" id="patchChangeBtn" onclick="logPatchChange()" style="display:none"></button>
+  </div>
+
+  <!-- Calendar -->
+  <div class="section-lbl">Calendar</div>
+  <div class="cal-wrap">
+    <div class="cal-header">
+      <button class="cal-nav" onclick="changeCalMonth(-1)">‹</button>
+      <div class="cal-month" id="calMonthLabel"></div>
+      <button class="cal-nav" onclick="changeCalMonth(1)">›</button>
+    </div>
+    <div class="cal-grid" id="calGrid"></div>
+    <div class="legend" style="margin-top:10px">
+      <div class="leg-item"><div class="leg-dot" style="background:#e0506a"></div>Period</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#e0506a;opacity:.35"></div>Predicted</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#2ab8a8"></div>Fertile</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#2ab8a8;border:2px solid var(--teal)"></div>Ovulation</div>
+    </div>
+  </div>
+
+  <!-- Log hint -->
+  <div class="log-hint" onclick="openLogDay(null)" style="cursor:pointer">
+    <div class="log-hint-text">Log today or tap a calendar day ✦</div>
+    <div class="log-hint-btn">+ Log Day</div>
+  </div>
+
+  <!-- Recent logs -->
+  <div class="section-lbl">Recent Entries</div>
+  <div class="log-list" id="logList">
+    <div class="no-logs">No entries yet — tap a day to start tracking 🌙</div>
+  </div>
+
+</div>
+
+<button class="fab" onclick="openLogDay(null)">🌙</button>
+
+<!-- Patch Settings Sheet -->
+<div class="overlay" id="patchOv" onclick="closeSheet('patchOv')">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="handle"></div>
+    <div id="patchContent"></div>
+  </div>
+</div>
+<div class="overlay" id="logOv" onclick="closeSheet('logOv')">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="handle"></div>
+    <div id="logContent"></div>
+  </div>
+</div>
+
+<!-- Settings Sheet -->
+<div class="overlay" id="settOv" onclick="closeSheet('settOv')">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="handle"></div>
+    <div id="settContent"></div>
+  </div>
+</div>
+
+<script>
+  const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const MONTHS_S=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const DAYS_S=['Su','Mo','Tu','We','Th','Fr','Sa'];
+
+  const SYMPTOMS=['Cramps','Headache','Bloating','Back pain','Fatigue','Nausea','Tender breasts','Acne','Cravings','Spotting','Mood swings','Insomnia'];
+  const MOODS=['😊','😌','😔','😤','😭','🥰','😴','😰','🤩','😶'];
+  const MOOD_NAMES=['Happy','Calm','Sad','Irritable','Emotional','Loving','Tired','Anxious','Energetic','Numb'];
+  const FLOWS=['None','Spotting','Light','Medium','Heavy'];
+  const PHASES=[
+    {name:'Menstrual',icon:'🩸',desc:'Rest and restore',color:'#e0506a'},
+    {name:'Follicular',icon:'🌱',desc:'Energy rising',color:'#2ab8a8'},
+    {name:'Ovulatory',icon:'🌕',desc:'Peak vitality',color:'#c4963a'},
+    {name:'Luteal',icon:'🌖',desc:'Turn inward',color:'#7a3db8'},
+  ];
+
+  let D={
+    cycleLength:28, periodLength:5,
+    logs:{},
+    cycles:[],
+    patch:{
+      startDate:null,       // date of first patch in current round (YYYY-MM-DD)
+      patchDays:7,          // days each patch is worn
+      numPatches:3,         // patches per cycle before free week
+      freeWeekDays:7,       // patch-free days
+      history:[],           // [{date, action:'applied'|'removed', patchNum}]
+    },
+  };
+
+  let calYear,calMonth;
+  let LF={date:'',flow:'None',symptoms:[],mood:'',notes:'',isPeriod:false};
+
+  const save=()=>{try{localStorage.setItem('luna1',JSON.stringify(D));}catch(e){}};
+  const load=()=>{try{const s=localStorage.getItem('luna1');if(s)D=JSON.parse(s);}catch(e){}};
+
+  function todayStr(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+
+  // ── Cycle calculations ──────────────────────────────────────
+  function getLastPeriodStart(){
+    const starts=Object.keys(D.logs).filter(k=>D.logs[k].isPeriod&&D.logs[k].flow!=='None').sort().reverse();
+    // find start of last period run
+    for(const d of starts){
+      const prev=offsetDate(d,-1);
+      if(!D.logs[prev]?.isPeriod) return d;
+    }
+    return starts[0]||null;
+  }
+
+  function offsetDate(dateStr,days){
+    const d=new Date(dateStr+'T12:00:00');
+    d.setDate(d.getDate()+days);
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'00')}`;
+  }
+
+  function daysUntil(dateStr){
+    const today=new Date(); today.setHours(0,0,0,0);
+    const target=new Date(dateStr+'T12:00:00');
+    return Math.round((target-today)/(1000*60*60*24));
+  }
+
+  function predictedDays(){
+    const last=getLastPeriodStart(); if(!last) return {period:[],fertile:[],ovulation:[]};
+    const nextStart=offsetDate(last,D.cycleLength);
+    const ovDay=offsetDate(last,D.cycleLength-14);
+    const period=[],fertile=[];
+    for(let i=0;i<D.periodLength;i++) period.push(offsetDate(nextStart,i));
+    for(let i=-3;i<=3;i++) if(i!==0) fertile.push(offsetDate(ovDay,i));
+    return {period,fertile,ovulation:[ovDay]};
+  }
+
+  function getCurrentPhase(){
+    const last=getLastPeriodStart(); if(!last) return PHASES[1];
+    const today=new Date(); today.setHours(12,0,0,0);
+    const start=new Date(last+'T12:00:00');
+    const day=Math.floor((today-start)/(1000*60*60*24));
+    if(day<D.periodLength) return PHASES[0];
+    if(day<D.cycleLength-14) return PHASES[1];
+    if(day<D.cycleLength-11) return PHASES[2];
+    return PHASES[3];
+  }
+
+  function getCycleDayNum(){
+    const last=getLastPeriodStart(); if(!last) return '?';
+    const today=new Date(); today.setHours(12,0,0,0);
+    const start=new Date(last+'T12:00:00');
+    return Math.floor((today-start)/(1000*60*60*24))+1;
+  }
+
+  function calcStats(){
+    const periodStarts=[];
+    const sorted=Object.keys(D.logs).filter(k=>D.logs[k].isPeriod).sort();
+    let prev=null;
+    for(const d of sorted){
+      const prevDay=offsetDate(d,-1);
+      if(!D.logs[prevDay]?.isPeriod){ periodStarts.push(d); }
+    }
+    let avgCycle=D.cycleLength, avgPeriod=D.periodLength;
+    if(periodStarts.length>=2){
+      const lens=[];
+      for(let i=1;i<periodStarts.length;i++){
+        const a=new Date(periodStarts[i-1]+'T12:00:00');
+        const b=new Date(periodStarts[i]+'T12:00:00');
+        lens.push(Math.round((b-a)/(1000*60*60*24)));
+      }
+      avgCycle=Math.round(lens.reduce((s,v)=>s+v,0)/lens.length);
+    }
+    return {avgCycle,avgPeriod};
+  }
+
+  // ── Render ──────────────────────────────────────────────────
+  function renderAll(){
+    renderPhaseBanner();
+    renderCalendar();
+    renderStats();
+    renderLogs();
+  }
+
+  function renderPhaseBanner(){
+    const phase=getCurrentPhase();
+    const day=getCycleDayNum();
+    const pred=predictedDays();
+    const nextPeriod=pred.period[0];
+    const daysUntilNext=nextPeriod?daysUntil(nextPeriod):null;
+    document.getElementById('phaseBanner').innerHTML=`
+      <div class="phase-info">
+        <div class="phase-icon">${phase.icon}</div>
+        <div>
+          <div class="phase-name" style="color:${phase.color}">${phase.name} Phase</div>
+          <div class="phase-desc">${phase.desc}</div>
+        </div>
+      </div>
+      <div class="cycle-day">
+        <div class="cycle-day-num">${day}</div>
+        <div class="cycle-day-lbl">Cycle Day</div>
+        ${daysUntilNext!==null?`<div style="font-size:.65rem;color:var(--soft);font-style:italic;margin-top:2px">${daysUntilNext>0?`Next in ${daysUntilNext}d`:daysUntilNext===0?'Due today':'Late'}</div>`:''}
+      </div>`;
+    document.getElementById('phaseBanner').style.background=`linear-gradient(135deg,${phase.color}15,transparent)`;
+    document.getElementById('phaseBanner').style.borderBottomColor=`${phase.color}40`;
+  }
+
+  function renderStats(){
+    const {avgCycle,avgPeriod}=calcStats();
+    const pred=predictedDays();
+    const nextPeriod=pred.period[0];
+    const dti=nextPeriod?daysUntil(nextPeriod):null;
+    document.getElementById('statAvgCycle').textContent=avgCycle+'d';
+    document.getElementById('statAvgPeriod').textContent=avgPeriod+'d';
+    document.getElementById('statNextIn').textContent=dti!==null?(dti>=0?dti+'d':'Late'):'—';
+  }
+
+  function renderCalendar(){
+    const now=new Date();
+    if(calYear===undefined){calYear=now.getFullYear();calMonth=now.getMonth();}
+    document.getElementById('calMonthLabel').textContent=`${MONTHS[calMonth]} ${calYear}`;
+    const pred=predictedDays();
+    const firstDay=new Date(calYear,calMonth,1).getDay();
+    const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
+    const todS=todayStr();
+    let html=DAYS_S.map(d=>`<div class="cal-dow">${d}</div>`).join('');
+    for(let i=0;i<firstDay;i++) html+=`<div class="cal-day empty"></div>`;
+    for(let d=1;d<=daysInMonth;d++){
+      const ds=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const log=D.logs[ds];
+      let cls='cal-day';
+      if(ds===todS) cls+=' today';
+      if(log?.isPeriod&&log?.flow!=='None'&&log?.flow!=='Spotting') cls+=' period';
+      else if(log?.isPeriod&&log?.flow==='Spotting') cls+=' period';
+      if(log?.isPeriod&&!D.logs[offsetDate(ds,-1)]?.isPeriod) cls+=' period-start';
+      if(pred.period.includes(ds)&&!log?.isPeriod) cls+=' predicted';
+      if(pred.fertile.includes(ds)&&!log?.isPeriod) cls+=' fertile';
+      if(pred.ovulation.includes(ds)&&!log?.isPeriod) cls+=' ovulation';
+      if(log&&!log.isPeriod) cls+=' selected';
+      const hasDot=log&&!log.isPeriod;
+      html+=`<div class="${cls}" onclick="openLogDay('${ds}')">${d}${hasDot?'<div class="cal-dot"></div>':''}</div>`;
+    }
+    document.getElementById('calGrid').innerHTML=html;
+  }
+
+  function renderLogs(){
+    const el=document.getElementById('logList');
+    const sorted=Object.keys(D.logs).sort().reverse().slice(0,12);
+    if(!sorted.length){el.innerHTML='<div class="no-logs">No entries yet — tap a day to start tracking 🌙</div>';return;}
+    el.innerHTML=sorted.map(ds=>{
+      const l=D.logs[ds];
+      const [y,m,d]=ds.split('-');
+      const dateLabel=`${MONTHS_S[+m-1]} ${+d}, ${y}`;
+      return `<div class="log-card" onclick="openLogDay('${ds}')">
+        <div class="log-card-top">
+          <div class="log-date">${dateLabel}</div>
+          ${l.flow&&l.flow!=='None'?`<div class="log-flow flow-${l.flow.toLowerCase()}">${l.flow}</div>`:''}
+        </div>
+        ${l.mood?`<div style="font-size:1.4rem;margin-bottom:6px">${l.mood}</div>`:''}
+        ${l.symptoms?.length?`<div class="log-chips">${l.symptoms.map(s=>`<span class="log-chip">${s}</span>`).join('')}</div>`:''}
+        ${l.notes?`<div class="log-note">${l.notes}</div>`:''}
+      </div>`;
+    }).join('');
+  }
+
+  // ── Log day ─────────────────────────────────────────────────
+  function openLogDay(dateStr){
+    const ds=dateStr||todayStr();
+    const existing=D.logs[ds]||{};
+    LF={
+      date:ds,
+      flow:existing.flow||'None',
+      symptoms:[...(existing.symptoms||[])],
+      mood:existing.mood||'',
+      notes:existing.notes||'',
+      isPeriod:existing.isPeriod||false,
+    };
+    renderLogForm(); openSheet('logOv');
+  }
+
+  function renderLogForm(){
+    const [y,m,d]=LF.date.split('-');
+    const dateLabel=`${MONTHS_S[+m-1]} ${+d}, ${y}`;
+    document.getElementById('logContent').innerHTML=`
+      <div class="sheet-hd">
+        <div class="sheet-title">${dateLabel}</div>
+        <button class="sheet-close" onclick="closeSheet('logOv')">✕</button>
+      </div>
+      <div class="sheet-divider"></div>
+
+      <div class="field">
+        <label>Period Day?</label>
+        <div style="display:flex;gap:8px">
+          <button class="tog-chip${LF.isPeriod?'':' on'}" onclick="setPeriod(false)">No period</button>
+          <button class="tog-chip rose${LF.isPeriod?' on':''}" onclick="setPeriod(true)">🩸 Yes, period day</button>
+        </div>
+      </div>
+
+      ${LF.isPeriod?`
+      <div class="field">
+        <label>Flow</label>
+        <div class="flow-row">
+          ${FLOWS.map(f=>`<button class="flow-btn${LF.flow===f?' on':''}" onclick="LF.flow='${f}';renderLogForm()">${f}</button>`).join('')}
+        </div>
+      </div>`:''}
+
+      <div class="field">
+        <label>Mood</label>
+        <div class="mood-row">
+          ${MOODS.map((m,i)=>`<button class="mood-btn${LF.mood===m?' on':''}" onclick="LF.mood=LF.mood==='${m}'?'':'${m}';renderLogForm()" title="${MOOD_NAMES[i]}">${m}</button>`).join('')}
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Symptoms</label>
+        <div class="chip-grid">
+          ${SYMPTOMS.map(s=>`<button class="tog-chip${LF.symptoms.includes(s)?' on':''}" onclick="toggleSym('${s}')">${s}</button>`).join('')}
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Notes</label>
+        <textarea class="inp" id="notesInp" placeholder="How are you feeling today…" oninput="LF.notes=this.value">${LF.notes}</textarea>
+      </div>
+
+      <div class="btn-row">
+        ${D.logs[LF.date]?`<button class="btn-danger" onclick="deleteLog()">Delete</button>`:''}
+        <button class="btn-primary" onclick="saveLog()">Save Entry ✦</button>
+      </div>`;
+  }
+
+  function setPeriod(val){ LF.isPeriod=val; if(!val) LF.flow='None'; renderLogForm(); }
+
+  function toggleSym(s){
+    LF.symptoms=LF.symptoms.includes(s)?LF.symptoms.filter(x=>x!==s):[...LF.symptoms,s];
+    renderLogForm();
+  }
+
+  function saveLog(){
+    const notes=document.getElementById('notesInp')?.value||LF.notes;
+    LF.notes=notes;
+    if(!LF.isPeriod&&LF.flow!=='None'&&LF.flow!=='') LF.flow='None';
+    D.logs[LF.date]={...LF};
+    save(); closeSheet('logOv'); renderAll(); toast('🌙 Entry saved');
+  }
+
+  function deleteLog(){
+    delete D.logs[LF.date];
+    save(); closeSheet('logOv'); renderAll(); toast('Entry removed');
+  }
+
+  function changeCalMonth(dir){
+    calMonth+=dir;
+    if(calMonth>11){calMonth=0;calYear++;}
+    if(calMonth<0){calMonth=11;calYear--;}
+    renderCalendar();
+  }
+
+  // ── Patch tracker ────────────────────────────────────────────
+  function patchDayOffset(dateStr, days){
+    const d=new Date(dateStr+'T12:00:00');
+    d.setDate(d.getDate()+days);
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+
+  function daysBetween(a,b){
+    return Math.floor((new Date(b+'T12:00:00')-new Date(a+'T12:00:00'))/(1000*60*60*24));
+  }
+
+  function getPatchStatus(){
+    const p=D.patch;
+    if(!p.startDate) return {phase:'none'};
+    const today=todayStr();
+    const elapsed=daysBetween(p.startDate, today);
+    const cycleLen=p.numPatches*p.patchDays+p.freeWeekDays;
+    const pos=((elapsed%cycleLen)+cycleLen)%cycleLen;
+
+    if(pos<p.numPatches*p.patchDays){
+      const patchNum=Math.floor(pos/p.patchDays)+1;
+      const dayInPatch=(pos%p.patchDays)+1;
+      const daysLeft=p.patchDays-dayInPatch+1;
+      const changeDate=patchDayOffset(p.startDate, Math.floor(pos/p.patchDays)*p.patchDays+p.patchDays);
+      return {phase:'patch', patchNum, dayInPatch, daysLeft, changeDate, pos};
+    } else {
+      const freeDay=pos-p.numPatches*p.patchDays+1;
+      const freeLeft=p.freeWeekDays-freeDay+1;
+      const nextStart=patchDayOffset(p.startDate, Math.ceil(elapsed/cycleLen)*cycleLen);
+      return {phase:'free', freeDay, freeLeft, nextStart, pos};
+    }
+  }
+
+  function renderPatch(){
+    const p=D.patch;
+    const status=getPatchStatus();
+
+    // Build slots
+    const slots=document.getElementById('patchSlots');
+    let slotsHtml='';
+    for(let i=1;i<=p.numPatches;i++){
+      let cls='patch-slot';
+      let badge='', daysTxt='';
+      if(status.phase==='patch'){
+        if(i<status.patchNum) cls+=' past';
+        else if(i===status.patchNum){ cls+=' active'; badge=`<div class="patch-slot-badge" style="color:var(--gold-lt)">Day ${status.dayInPatch}/${p.patchDays}</div>`; }
+      } else if(status.phase==='free'){
+        cls+=' past';
+      }
+      if(p.startDate){
+        const startOff=patchDayOffset(p.startDate,(i-1)*p.patchDays);
+        const endOff=patchDayOffset(p.startDate,i*p.patchDays-1);
+        const [,sm,sd]=startOff.split('-');
+        daysTxt=`${+sd}/${+sm}`;
+      }
+      slotsHtml+=`<div class="${cls}">
+        <div class="patch-slot-num">${i}</div>
+        <div class="patch-slot-lbl">Patch ${i}</div>
+        ${daysTxt?`<div class="patch-slot-days">${daysTxt}</div>`:''}
+        ${badge}
+      </div>`;
+    }
+    // Free week slot
+    let freeCls='patch-slot free-week';
+    let freeBadge='';
+    if(status.phase==='free') freeBadge=`<div class="patch-slot-badge" style="color:var(--purp-lt)">Day ${status.freeDay}/${p.freeWeekDays}</div>`;
+    if(status.phase==='free') freeCls+=' active';
+    slotsHtml+=`<div class="${freeCls}">
+      <div class="patch-slot-num" style="color:var(--purp-lt)">✦</div>
+      <div class="patch-slot-lbl" style="color:var(--softer)">Free Week</div>
+      ${freeBadge}
+    </div>`;
+    slots.innerHTML=slotsHtml;
+
+    // Status text & button
+    const statusEl=document.getElementById('patchStatus');
+    const btn=document.getElementById('patchChangeBtn');
+    if(status.phase==='none'){
+      statusEl.textContent='Tap "Start Tracking" to begin your patch schedule';
+      btn.style.display='block'; btn.textContent='🩹 Start Tracking';
+    } else if(status.phase==='patch'){
+      const daysLeft=status.daysLeft;
+      if(daysLeft<=1){
+        statusEl.textContent=`Patch ${status.patchNum} — change day today! ⚠️`;
+        btn.style.display='block'; btn.textContent=`🩹 Log Patch ${status.patchNum+1<=p.numPatches?status.patchNum+1+' Applied':'Removal'} Today`;
+      } else {
+        statusEl.textContent=`Patch ${status.patchNum} — ${daysLeft} days left, change on ${formatDate(status.changeDate)}`;
+        btn.style.display='none';
+      }
+    } else {
+      if(status.freeLeft<=1){
+        statusEl.textContent='Patch-free week ends — apply Patch 1 today!';
+        btn.style.display='block'; btn.textContent='🩹 Log Patch 1 Applied Today';
+      } else {
+        statusEl.textContent=`Patch-free week — ${status.freeLeft} days left, new patch on ${formatDate(status.nextStart)}`;
+        btn.style.display='none';
+      }
+    }
+  }
+
+  function formatDate(ds){
+    if(!ds) return '—';
+    const [y,m,d]=ds.split('-');
+    return `${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m-1]} ${+d}`;
+  }
+
+  function logPatchChange(){
+    const status=getPatchStatus();
+    if(status.phase==='none'){
+      D.patch.startDate=todayStr();
+      D.patch.history.push({date:todayStr(),action:'started'});
+      toast('🩹 Patch tracking started!');
+    } else {
+      D.patch.history.push({date:todayStr(),action:'changed',patchNum:status.patchNum});
+      toast('🩹 Patch change logged!');
+    }
+    save(); renderPatch();
+  }
+
+  function openPatchSettings(){
+    document.getElementById('patchContent').innerHTML=`
+      <div class="sheet-hd">
+        <div class="sheet-title">Patch Settings</div>
+        <button class="sheet-close" onclick="closeSheet('patchOv')">✕</button>
+      </div>
+      <div class="sheet-divider"></div>
+      <div class="field">
+        <label>Days per patch</label>
+        <input class="inp" type="number" id="pDays" value="${D.patch.patchDays}" min="1" max="14" inputmode="numeric"/>
+      </div>
+      <div class="field">
+        <label>Number of patches per cycle</label>
+        <input class="inp" type="number" id="pNum" value="${D.patch.numPatches}" min="1" max="6" inputmode="numeric"/>
+      </div>
+      <div class="field">
+        <label>Patch-free days</label>
+        <input class="inp" type="number" id="pFree" value="${D.patch.freeWeekDays}" min="0" max="14" inputmode="numeric"/>
+      </div>
+      <div class="field">
+        <label>First patch start date</label>
+        <input class="inp" type="date" id="pStart" value="${D.patch.startDate||''}"/>
+      </div>
+      <div class="field">
+        <label>Recent history</label>
+        <div style="font-size:.85rem;color:var(--soft);font-style:italic">
+          ${D.patch.history.length
+            ? D.patch.history.slice().reverse().slice(0,5).map(h=>`<div style="padding:4px 0;border-bottom:1px solid var(--border)">${formatDate(h.date)} — ${h.action}</div>`).join('')
+            : 'No history yet'}
+        </div>
+      </div>
+      ${D.patch.startDate?`<button class="btn-ghost" style="width:100%;margin-bottom:10px" onclick="resetPatch()">Reset patch tracking</button>`:''}
+      <button class="btn-primary" onclick="savePatchSettings()">Save Settings ✦</button>`;
+    openSheet('patchOv');
+  }
+
+  function savePatchSettings(){
+    D.patch.patchDays=parseInt(document.getElementById('pDays').value)||7;
+    D.patch.numPatches=parseInt(document.getElementById('pNum').value)||3;
+    D.patch.freeWeekDays=parseInt(document.getElementById('pFree').value)||7;
+    const startVal=document.getElementById('pStart').value;
+    if(startVal) D.patch.startDate=startVal;
+    save(); closeSheet('patchOv'); renderPatch(); toast('Patch settings saved ✦');
+  }
+
+  function resetPatch(){
+    D.patch.startDate=null; D.patch.history=[];
+    save(); closeSheet('patchOv'); renderPatch(); toast('Patch tracking reset');
+  }
+
+  // ── Sheets ────────────────────────────────────────────────────
+  function openSheet(id){document.getElementById(id).classList.add('open');document.body.style.overflow='hidden';}
+  function closeSheet(id){document.getElementById(id).classList.remove('open');document.body.style.overflow='';}
+
+  // ── Toast ─────────────────────────────────────────────────────
+  let tt;
+  function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>el.classList.remove('show'),2300);}
+
+  // ── Init ──────────────────────────────────────────────────────
+  load(); renderAll(); renderPatch();
+
+  try{
+    const m={name:'Luna Cycle Tracker',short_name:'Luna',start_url:'./',display:'standalone',background_color:'#080510',theme_color:'#080510',
+      icons:[{src:"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj4KICA8ZGVmcz4KICAgIDxyYWRpYWxHcmFkaWVudCBpZD0iYmciIGN4PSI1MCUiIGN5PSIzMCUiIHI9IjcwJSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMyYTBlNGEiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjMDgwNTEwIi8+CiAgICA8L3JhZGlhbEdyYWRpZW50PgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0idXJsKCNiZykiIHJ4PSIyMiIvPgogIDwhLS0gU3RhcnMgLS0+CiAgPGNpcmNsZSBjeD0iNzUiIGN5PSIxOCIgcj0iMS41IiBmaWxsPSIjZTBjOGZmIiBvcGFjaXR5PSIwLjkiLz4KICA8Y2lyY2xlIGN4PSI4NSIgY3k9IjMyIiByPSIxIiBmaWxsPSIjZTBjOGZmIiBvcGFjaXR5PSIwLjciLz4KICA8Y2lyY2xlIGN4PSIyMCIgY3k9IjI1IiByPSIxIiBmaWxsPSIjZTBjOGZmIiBvcGFjaXR5PSIwLjYiLz4KICA8Y2lyY2xlIGN4PSIzMCIgY3k9IjE1IiByPSIxLjUiIGZpbGw9IiNlMGM4ZmYiIG9wYWNpdHk9IjAuOCIvPgogIDxjaXJjbGUgY3g9IjgyIiBjeT0iNTUiIHI9IjEiIGZpbGw9IiNlMGM4ZmYiIG9wYWNpdHk9IjAuNSIvPgogIDxjaXJjbGUgY3g9IjE1IiBjeT0iNjAiIHI9IjEuMiIgZmlsbD0iI2UwYzhmZiIgb3BhY2l0eT0iMC42Ii8+CiAgPCEtLSBDcmVzY2VudCBtb29uIC0tPgogIDxjaXJjbGUgY3g9IjUyIiBjeT0iNTIiIHI9IjI4IiBmaWxsPSIjYzhhMGU4Ii8+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI0NCIgcj0iMjIiIGZpbGw9IiMxYTA4MzAiLz4KICA8IS0tIFJvc2UgZ2xvdyBkb3QgLS0+CiAgPGNpcmNsZSBjeD0iMjgiIGN5PSI3MCIgcj0iMyIgZmlsbD0iI2UwNTA2YSIgb3BhY2l0eT0iMC43Ii8+CiAgPGNpcmNsZSBjeD0iNzQiIGN5PSIyOCIgcj0iMiIgZmlsbD0iI2IwNmFlMCIgb3BhY2l0eT0iMC44Ii8+Cjwvc3ZnPg==",sizes:'192x192',type:'image/svg+xml'}]};
+    const b=new Blob([JSON.stringify(m)],{type:'application/manifest+json'});
+    document.head.appendChild(Object.assign(document.createElement('link'),{rel:'manifest',href:URL.createObjectURL(b)}));
+  }catch(e){}
+</script>
+</body>
+</html>
